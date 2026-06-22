@@ -91,6 +91,9 @@
     .budget-card .ico { font-size: 24px; }
     .budget-card .label { font-size: 12px; color: var(--text-soft); margin: 6px 0 4px; font-weight: 600; }
     .budget-card .val { font-size: 15px; font-weight: 800; color: var(--text-strong); }
+    .budget-card.rec { border-color: var(--blue); box-shadow: 0 6px 16px -8px var(--blue); }
+    .budget-card.rec .label { color: var(--blue-d); }
+    .budget-note { max-width: 1040px; margin: 8px auto 0; padding: 0 24px; text-align: center; color: var(--text-soft); font-size: 13px; line-height: 1.6; }
 
     /* ---------- Sticky day nav (scroll pills) ---------- */
     .daynav {
@@ -439,21 +442,22 @@
 
 <section class="budget-box">
     <div class="budget-card">
-        <div class="ico">💰</div>
-        <div class="label">預估島上總花費</div>
+        <div class="ico">👥</div>
+        <div class="label">2 人同行</div>
+        <div class="val">約 NT$ 15,000 / 每人</div>
+    </div>
+    <div class="budget-card rec">
+        <div class="ico">👥</div>
+        <div class="label">3 人同行（原訂・建議）</div>
         <div class="val">約 NT$ 12,000 / 每人</div>
     </div>
     <div class="budget-card">
-        <div class="ico">🚗</div>
-        <div class="label">交通型態</div>
-        <div class="val">中型 SUV 全險自駕</div>
-    </div>
-    <div class="budget-card">
-        <div class="ico">🏨</div>
-        <div class="label">住宿保證</div>
-        <div class="val">全獨立專屬衛浴房型</div>
+        <div class="ico">👥</div>
+        <div class="label">4 人同行</div>
+        <div class="val">約 NT$ 10,500 / 每人</div>
     </div>
 </section>
+<p class="budget-note">💰 預估島上「每人」花費（人越多越省，租車／住宿均攤後降低）　·　🚗 中型 SUV 全險自駕　·　🏨 全獨立專屬衛浴房型<br><span style="font-size:12px">※ 概估含租車・住宿・餐食・溫泉／門票・伴手禮；4 人建議升大型 SUV／加大房型，費用略增。</span></p>
 
 <section class="mapwrap">
     <h2 class="map-title">🗺️ 行程地圖．Day 1–6 地理位置</h2>
