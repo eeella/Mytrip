@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#2a75d3">
+<title>濟州島．冰雪漢拏山冬攀、山茶花與橘子秘境小資六日</title>
+<style>
+    :root {
+        --blue: #2a75d3;
+        --blue-d: #1d4ed8;
+        --orange: #ff7a00;
+        --orange-d: #c2410c;
+        --pink: #ff4a7d;
+        --pink-d: #be123c;
+        --bg: #f1f5f9;
+        --card: #ffffff;
+        --text: #334155;
+        --text-soft: #64748b;
+        --text-strong: #0f172a;
+        --border: #e2e8f0;
+        --shadow: 0 10px 30px -12px rgb(15 23 42 / .18);
+        --radius: 16px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+        font-family: "Helvetica Neue", "Noto Sans TC", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+        background:
+            radial-gradient(1200px 500px at 100% -10%, #dbeafe 0%, transparent 60%),
+            radial-gradient(1000px 500px at -10% 0%, #ffe4ec 0%, transparent 55%),
+            var(--bg);
+        color: var(--text);
+        line-height: 1.7;
+        margin: 0;
+        padding: 0 0 60px;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    /* ---------- Hero ---------- */
+    .hero {
+        max-width: 1040px;
+        margin: 0 auto;
+        padding: 48px 24px 24px;
+        text-align: center;
+    }
+    .hero .kicker {
+        display: inline-block;
+        background: rgba(42,117,211,.1);
+        color: var(--blue-d);
+        font-weight: 700;
+        font-size: 13px;
+        letter-spacing: .12em;
+        padding: 6px 14px;
+        border-radius: 999px;
+        margin-bottom: 18px;
+    }
+    h1 {
+        color: var(--text-strong);
+        font-size: clamp(24px, 5vw, 36px);
+        line-height: 1.3;
+        margin: 0 0 14px;
+        letter-spacing: .5px;
+    }
+    .trip-info {
+        font-size: 16px;
+        color: var(--text-soft);
+        font-weight: 600;
+        margin-bottom: 26px;
+    }
+
+    .budget-box {
+        max-width: 1040px;
+        margin: 0 auto 14px;
+        padding: 0 24px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+    }
+    .budget-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 18px 16px;
+        text-align: center;
+        box-shadow: 0 4px 14px -8px rgb(15 23 42 / .15);
+    }
+    .budget-card .ico { font-size: 24px; }
+    .budget-card .label { font-size: 12px; color: var(--text-soft); margin: 6px 0 4px; font-weight: 600; }
+    .budget-card .val { font-size: 15px; font-weight: 800; color: var(--text-strong); }
+
+    /* ---------- Sticky day nav (scroll pills) ---------- */
+    .daynav {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        background: rgba(248,250,252,.9);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--border);
+    }
+    .daynav-inner {
+        max-width: 1040px;
+        margin: 0 auto;
+        padding: 11px 16px;
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        scrollbar-width: none;
+        scroll-behavior: smooth;
+    }
+    .daynav-inner::-webkit-scrollbar { display: none; }
+    .daynav a {
+        flex: 0 0 auto;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--text-soft);
+        background: #fff;
+        border: 1px solid var(--border);
+        padding: 7px 14px;
+        border-radius: 999px;
+        text-decoration: none;
+        white-space: nowrap;
+        transition: .2s;
+    }
+    .daynav a:hover { color: var(--blue-d); border-color: var(--blue); }
+    .daynav a.active {
+        color: #fff;
+        background: linear-gradient(135deg, var(--blue), var(--blue-d));
+        border-color: var(--blue-d);
+        box-shadow: 0 6px 14px -8px var(--blue);
+    }
+
+    /* ---------- Layout ---------- */
+    .container {
+        max-width: 1040px;
+        margin: 30px auto 0;
+        padding: 0 24px;
+    }
+
+    .day-section {
+        background: var(--card);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 26px;
+        margin-bottom: 28px;
+        scroll-margin-top: 70px;
+        border: 1px solid var(--border);
+    }
+
+    .day-title {
+        font-size: clamp(16px, 3.4vw, 20px);
+        color: #fff;
+        background: linear-gradient(135deg, var(--blue), var(--blue-d));
+        padding: 14px 20px;
+        border-radius: 12px;
+        margin: 0 0 14px;
+        font-weight: 800;
+        line-height: 1.5;
+        box-shadow: 0 8px 20px -10px var(--blue);
+    }
+    .day-title.south { background: linear-gradient(135deg, var(--pink), var(--pink-d)); box-shadow: 0 8px 20px -10px var(--pink); }
+    .day-title.orange-theme { background: linear-gradient(135deg, var(--orange), var(--orange-d)); box-shadow: 0 8px 20px -10px var(--orange); }
+
+    .highlight-bar {
+        background: #f8fafc;
+        border-left: 5px solid var(--blue);
+        padding: 12px 16px;
+        margin-bottom: 20px;
+        font-weight: 700;
+        color: var(--text-strong);
+        border-radius: 0 10px 10px 0;
+    }
+    .south + .highlight-bar { border-left-color: var(--pink); }
+    .orange-theme + .highlight-bar { border-left-color: var(--orange); }
+
+    /* ---------- Table ---------- */
+    table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin-bottom: 18px;
+        font-size: 15px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    thead th {
+        background: #f8fafc;
+        color: var(--text-strong);
+        font-weight: 700;
+        font-size: 14px;
+        padding: 13px 16px;
+        text-align: left;
+        border-bottom: 2px solid var(--border);
+    }
+    td {
+        padding: 14px 16px;
+        text-align: left;
+        vertical-align: top;
+        border-bottom: 1px solid var(--border);
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: #fbfdff; }
+
+    .time-col {
+        width: 130px;
+        font-weight: 800;
+        color: var(--blue-d);
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+    }
+    .location-col { width: 260px; }
+    td b { color: var(--text-strong); }
+
+    /* map link button */
+    .map-link {
+        display: inline-block;
+        margin-top: 8px;
+        background: #eff6ff;
+        color: var(--blue-d);
+        border: 1px solid #bfdbfe;
+        border-radius: 999px;
+        padding: 4px 11px;
+        font-size: 12.5px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+    .map-link:hover { background: var(--blue); color: #fff; border-color: var(--blue); }
+
+    .img-container { margin: 14px 0 2px; text-align: center; }
+    .img-container img {
+        width: 100%;
+        max-width: 560px;
+        aspect-ratio: 16 / 10;
+        object-fit: cover;
+        height: auto;
+        border-radius: 12px;
+        box-shadow: 0 6px 18px -10px rgb(15 23 42 / .4);
+        display: block;
+        margin: 0 auto;
+        background: #eef2f7;
+    }
+    /* graceful fallback when offline / image fails to load */
+    .img-fallback {
+        max-width: 560px;
+        margin: 0 auto;
+        background: linear-gradient(135deg, #eef2ff, #f0f9ff);
+        border: 1px dashed var(--border);
+        border-radius: 12px;
+        padding: 24px 16px;
+        color: var(--text-soft);
+        font-size: 13.5px;
+    }
+    .img-caption { font-size: 13px; color: var(--text-soft); margin-top: 7px; font-style: italic; }
+
+    .meta-box {
+        background: #f8fafc;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 16px 18px;
+        font-size: 14px;
+    }
+    .meta-box p { margin: 7px 0; }
+
+    .badge {
+        display: inline-block;
+        padding: 3px 9px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        color: #fff;
+        vertical-align: middle;
+    }
+    .badge-blue { background: var(--blue); }
+    .badge-orange { background: var(--orange); }
+    .badge-pink { background: var(--pink); }
+
+    a { color: var(--blue-d); text-decoration: none; font-weight: 600; border-bottom: 1px solid rgba(29,78,216,.25); }
+    a:hover { border-bottom-color: var(--blue-d); }
+    .map-link { border-bottom: none; }
+
+    .footer { text-align: center; color: var(--text-soft); font-size: 13px; margin-top: 36px; padding: 0 24px; }
+
+    /* ---------- Map ---------- */
+    .mapwrap { max-width: 1040px; margin: 30px auto 0; padding: 0 24px; }
+    .mapwrap .map-title {
+        font-size: clamp(17px, 3.4vw, 21px);
+        font-weight: 800;
+        color: var(--text-strong);
+        margin: 0 0 6px;
+    }
+    .mapwrap .map-sub { color: var(--text-soft); font-size: 14px; margin: 0 0 14px; }
+    #jejuMap {
+        height: 460px;
+        border-radius: 16px;
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+        z-index: 1;
+    }
+    .map-areas {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin: 14px 0 6px;
+    }
+    .map-areas div {
+        background: #f8fafc;
+        border: 1px solid var(--border);
+        border-left: 4px solid var(--blue);
+        border-radius: 8px;
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+    .map-areas div b { color: var(--text-strong); }
+    .map-areas .a-mid { border-left-color: #6366f1; }
+    .map-areas .a-south { border-left-color: var(--pink); }
+    .maplegend { display: flex; flex-wrap: wrap; gap: 9px 16px; margin-top: 10px; font-size: 13px; font-weight: 700; color: var(--text); }
+    .maplegend span { display: inline-flex; align-items: center; gap: 6px; }
+    .maplegend i { width: 13px; height: 13px; border-radius: 50%; display: inline-block; border: 2px solid #fff; box-shadow: 0 0 0 1px var(--border); }
+    .stay-pin { font-size: 24px; line-height: 1; text-align: center; filter: drop-shadow(0 2px 3px rgba(0,0,0,.35)); }
+    .leaflet-popup-content { font-weight: 600; }
+
+    /* ---------- Plan switch (car / bus) ---------- */
+    .planswitch { max-width: 1040px; margin: 34px auto 0; padding: 0 24px; }
+    .planswitch .plan-h { font-size: clamp(16px, 3.4vw, 20px); font-weight: 800; color: var(--text-strong); margin: 0; }
+    .plan-collapse > summary {
+        cursor: pointer; list-style: none;
+        background: #fff; border: 1px solid var(--border); border-radius: 12px;
+        padding: 15px 18px; box-shadow: 0 4px 14px -10px rgb(15 23 42 / .2);
+    }
+    .plan-collapse > summary::-webkit-details-marker { display: none; }
+    .plan-collapse > summary::after { content: "點開 ▾"; color: var(--text-soft); font-size: 13px; font-weight: 700; float: right; }
+    .plan-collapse[open] > summary::after { content: "收合 ▴"; }
+    .plan-collapse[open] > summary { margin-bottom: 14px; }
+    .plantabs { display: inline-flex; background: #eef2f7; border: 1px solid var(--border); border-radius: 999px; padding: 4px; gap: 4px; margin-bottom: 14px; }
+    .plantabs button { border: none; background: transparent; font: inherit; font-weight: 800; font-size: 14px; color: var(--text-soft); padding: 9px 20px; border-radius: 999px; cursor: pointer; transition: .2s; }
+    .plantabs button.active { background: #fff; color: var(--blue-d); box-shadow: 0 2px 7px -2px rgb(15 23 42 / .25); }
+    .planpanel { display: none; background: var(--card); border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow); padding: 22px; }
+    .planpanel.show { display: block; animation: menuIn .18s ease; }
+    .planpanel h3 { margin: 0 0 4px; font-size: 17px; color: var(--text-strong); }
+    .planpanel .plan-tag { font-size: 13px; color: var(--text-soft); margin: 0 0 16px; }
+    .plan-block { border: 1px solid var(--border); border-left: 4px solid var(--blue); border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; font-size: 14px; background: #f8fafc; }
+    .plan-block.bus { border-left-color: var(--orange); }
+    .plan-block b { color: var(--text-strong); }
+    .plan-nights { width: 100%; border-collapse: collapse; margin: 4px 0 12px; font-size: 14px; }
+    .plan-nights th, .plan-nights td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; }
+    .plan-nights th { background: #f1f5f9; font-weight: 700; }
+    .plan-pros { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px; }
+    .plan-pros div { border-radius: 10px; padding: 10px 12px; font-size: 13.5px; }
+    .plan-pros .pro { background: #f0fdf4; border: 1px solid #bbf7d0; }
+    .plan-pros .con { background: #fef2f2; border: 1px solid #fecaca; }
+    .plan-details { border: 1px solid var(--border); border-left: 4px solid var(--orange); border-radius: 10px; background: #f8fafc; margin-bottom: 12px; }
+    .plan-details > summary { cursor: pointer; padding: 12px 14px; font-weight: 800; color: var(--text-strong); font-size: 14px; list-style: none; user-select: none; }
+    .plan-details > summary::-webkit-details-marker { display: none; }
+    .plan-details > summary::after { content: " ▾"; color: var(--text-soft); float: right; }
+    .plan-details[open] > summary::after { content: " ▴"; }
+    .plan-details > div { padding: 0 14px 14px; }
+    .plan-details table.plan-nights { margin: 0; }
+
+    @media (max-width: 720px) {
+        #jejuMap { height: 380px; }
+        .map-areas { grid-template-columns: 1fr; }
+        .plantabs { display: flex; width: 100%; }
+        .plantabs button { flex: 1; padding: 9px 8px; }
+        .plan-pros { grid-template-columns: 1fr; }
+    }
+
+    /* ---------- Responsive: tables become cards ---------- */
+    @media (max-width: 720px) {
+        .budget-box {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            padding: 0 14px;
+        }
+        .budget-card { padding: 12px 7px; border-radius: 12px; }
+        .budget-card .ico { font-size: 19px; }
+        .budget-card .label { font-size: 10px; margin: 5px 0 3px; line-height: 1.3; }
+        .budget-card .val { font-size: 11.5px; line-height: 1.35; }
+        .day-section { padding: 18px; }
+
+        table, thead, tbody, tr, td { display: block; width: 100%; }
+        thead { display: none; }
+        table { border: none; }
+        tbody tr {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 14px;
+            padding: 4px 0;
+            box-shadow: 0 4px 14px -10px rgb(15 23 42 / .25);
+        }
+        tbody tr:hover td { background: transparent; }
+        td {
+            border: none;
+            border-bottom: 1px dashed var(--border);
+            padding: 12px 16px 12px 110px;
+            position: relative;
+            min-height: 20px;
+        }
+        tr td:last-child { border-bottom: none; }
+        td::before {
+            content: attr(data-label);
+            position: absolute;
+            left: 14px;
+            top: 12px;
+            width: 86px;
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--text-soft);
+            letter-spacing: .03em;
+        }
+        .time-col { width: auto; }
+    }
+</style>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+
+<nav class="daynav">
+    <div class="daynav-inner" id="dayNav">
+        <a href="#day1">DAY 1 ﹒ 01/27 (二)</a>
+        <a href="#day2">DAY 2 ﹒ 01/28 (三)</a>
+        <a href="#day3">DAY 3 ﹒ 01/29 (四)</a>
+        <a href="#day4">DAY 4 ﹒ 01/30 (五)</a>
+        <a href="#day5">DAY 5 ﹒ 01/31 (六)</a>
+        <a href="#day6">DAY 6 ﹒ 02/01 (日)</a>
+    </div>
+</nav>
+
+<header class="hero">
+    <span class="kicker">JEJU ﹒ WINTER ﹒ 6 DAYS</span>
+    <h1>✈️ 濟州島．冰雪漢拏山冬攀<br>山茶花與橘子秘境小資六日</h1>
+    <div class="trip-info">📅 旅遊日期：1/27 – 02/01（六天五夜，三人同行自駕版）</div>
+</header>
+
+<section class="budget-box">
+    <div class="budget-card">
+        <div class="ico">💰</div>
+        <div class="label">預估島上總花費</div>
+        <div class="val">約 NT$ 12,000 / 每人</div>
+    </div>
+    <div class="budget-card">
+        <div class="ico">🚗</div>
+        <div class="label">交通型態</div>
+        <div class="val">中型 SUV 全險自駕</div>
+    </div>
+    <div class="budget-card">
+        <div class="ico">🏨</div>
+        <div class="label">住宿保證</div>
+        <div class="val">全獨立專屬衛浴房型</div>
+    </div>
+</section>
+
+<section class="mapwrap">
+    <h2 class="map-title">🗺️ 行程地圖．Day 1–6 地理位置</h2>
+    <p class="map-sub">各景點依天數分色，🏨 為兩間住宿據點。方便你對照大方向、挑選住宿位置。</p>
+    <div id="jejuMap"></div>
+    <div class="map-areas">
+        <div class="a-north"><b>北部・濟州市</b><br>DAY 1・2・5（機場、蓮洞、樹木園、吾羅洞）<br>🏨 住宿A：Urbanstay</div>
+        <div class="a-mid"><b>中部・漢拏山</b><br>DAY 3 攻頂、DAY 5 1100高地（中央山區）</div>
+        <div class="a-south"><b>南部・西歸浦</b><br>DAY 3・4（市場、溫泉、山茶花）<br>🏨 住宿B：Bricks Stay</div>
+    </div>
+    <div class="maplegend">
+        <span data-day="1"><i style="background:#2a75d3"></i>DAY 1</span>
+        <span data-day="2"><i style="background:#0ea5e9"></i>DAY 2</span>
+        <span data-day="3"><i style="background:#6366f1"></i>DAY 3</span>
+        <span data-day="4"><i style="background:#ff4a7d"></i>DAY 4</span>
+        <span data-day="5"><i style="background:#ff7a00"></i>DAY 5</span>
+        <span data-day="6"><i style="background:#10b981"></i>DAY 6</span>
+        <span data-day="stay">🏨 住宿據點</span>
+    </div>
+    <p class="map-sub" style="margin-top:8px">👆 點上方任一「DAY」即可放大到當天位置</p>
+</section>
+
+<section class="planswitch">
+    <details class="plan-collapse">
+    <summary class="plan-h">🧭 交通與住宿方案（可切換）</summary>
+    <div class="plantabs">
+        <button data-plan="car" class="active">🚗 自駕版</button>
+        <button data-plan="mix">🚗🚌 混合版</button>
+        <button data-plan="bus">🚌 公車版</button>
+    </div>
+
+    <!-- 自駕版 -->
+    <div class="planpanel show" id="plan-car">
+        <h3>🚗 自駕版（全程租車・最自由）</h3>
+        <p class="plan-tag">濟州租車為「機場取、機場還」，無異地租還。租車區間：Day1 落地取車 → Day6 還車後登機（約 5–6 天）。</p>
+
+        <div class="plan-block"><b>🏨 住宿：雙據點（共 5 晚）</b></div>
+        <table class="plan-nights">
+            <tr><th>晚</th><th>住宿</th><th>區域</th></tr>
+            <tr><td>D1・D2</td><td>Urbanstay（或同級）</td><td>北・濟州市（機場／蓮洞）</td></tr>
+            <tr><td>D3・D4</td><td>Bricks Stay（或同級）</td><td>南・西歸浦市區</td></tr>
+            <tr><td>D5</td><td>Urbanstay（或同級）</td><td>北・濟州市（近機場）</td></tr>
+        </table>
+
+        <div class="plan-block"><b>🔑 重點動線</b><br>全程自駕。D1 落地即取車、市區散點隨停隨走。D3 搬家日清晨北部退房、行李放車上 → 城板岳爬山 → 開到西歸浦。D5 回北部、D6 機場還車登機。</div>
+
+        <div class="plan-pros">
+            <div class="pro"><b>優點</b><br>最自由、不受公車班次限制、深夜也能移動、行李全程跟車</div>
+            <div class="con"><b>缺點</b><br>租金天數最多、爬山日車停整天、市區偶爾要找停車位</div>
+        </div>
+    </div>
+
+    <!-- 混合版 -->
+    <div class="planpanel" id="plan-mix">
+        <h3>🚗🚌 混合版（租 4 天・最划算）👍 推薦</h3>
+        <p class="plan-tag">市區用公車／計程車，把車用在最需要的山區與南部散點。租車區間：Day3 早上機場取車 → Day6 機場還車。</p>
+
+        <div class="plan-block"><b>🏨 住宿：雙據點（共 5 晚，同自駕）</b></div>
+        <table class="plan-nights">
+            <tr><th>晚</th><th>住宿</th><th>區域</th></tr>
+            <tr><td>D1・D2</td><td>Urbanstay（或同級）</td><td>北・濟州市（機場／蓮洞）</td></tr>
+            <tr><td>D3・D4</td><td>Bricks Stay（或同級）</td><td>南・西歸浦市區</td></tr>
+            <tr><td>D5</td><td>Urbanstay（或同級）</td><td>北・濟州市（近機場）</td></tr>
+        </table>
+
+        <div class="plan-block"><b>🔑 重點動線</b><br><b>D1・D2</b> 市區：公車＋計程車（機場⇄蓮洞 <b>600</b> 利木津／市區公車約 15 分；吾羅洞用計程車約 ₩8,000–12,000）。<b>D3 早上機場取車</b> → 城板岳爬山 → 西歸浦。<b>D4</b> 南部開車（溫泉＋冬柏）。<b>D5</b> 開 1100 高地 → 回濟州市。<b>D6</b> 機場還車登機。</div>
+
+        <div class="plan-pros">
+            <div class="pro"><b>優點</b><br>省 D1–2 兩天租金與市區停車、難搭公車的散點都有車、首末段省力</div>
+            <div class="con"><b>缺點</b><br>D1–2 靠公車／計程車、D3 一早要先到機場取車</div>
+        </div>
+    </div>
+
+    <!-- 公車版 -->
+    <div class="planpanel" id="plan-bus">
+        <h3>🚌 公車版（最省・不開車）</h3>
+        <p class="plan-tag">全程公車＋計程車。建議「單一北部據點」不換旅館，南部當天來回。</p>
+
+        <div class="plan-block bus"><b>🏨 住宿：單一北部據點（共 5 晚）</b><br>D1–D5 全住<b>機場／蓮洞</b>周邊（Urbanstay 或同級），不搬家、行李不動、D6 機場最近。<br><span style="color:#64748b">※ 若仍想南部過夜，則改雙據點＋D3 用「行李宅配（짐 배송）」把行李送到西歸浦民宿。</span></div>
+
+        <div class="plan-block bus"><b>⛰ D3 爬山日（最方便搭公車）</b><br><b>281 號公車</b>：市廳首班 <b>05:55</b>／巴士總站 <b>06:00</b> → 約 35–45 分到城板岳（約 06:40 入山，冬季 06:00 才開放，剛好）。下山後搭 <b>281 往西歸浦／濟州市</b>回程。<br>想更早更彈性：計程車 蓮洞→城板岳 約 ₩30,000（3 人均攤）。</div>
+
+        <details class="plan-details">
+            <summary>🚌 公車路線速查（號碼・班次）— 點我展開</summary>
+            <div style="overflow-x:auto">
+        <table class="plan-nights">
+            <tr><th>路段</th><th>公車</th><th>首／末班・班距</th><th>備註</th></tr>
+            <tr><td>機場 ⇄ 蓮洞／新濟州</td><td><b>600</b> 機場利木津<br>或市區公車</td><td>約 18–30 分一班</td><td>約 15 分、₩1,200 起</td></tr>
+            <tr><td>濟州市 ⇄ 城板岳 ⇄ 西歸浦<br>（D3 漢拏山）</td><td><b>281</b> 幹線<br>（181 急行更快）</td><td>市廳首班 05:55／總站 06:00；末班約 21:30–22:00</td><td>約 35–45 分到城板岳</td></tr>
+            <tr><td>濟州市 ⇄ 1100 高地 ⇄ 中文<br>（D5 雪景）</td><td><b>240</b> 雪景巴士</td><td>冬季 總站首班 07:30・末班 15:20；中文發 09:10–17:00；<b>50–90 分一班</b></td><td>約 1 小時到 1100；中途經漢拿樹木園（D2）</td></tr>
+            <tr><td>冬柏森林 동백포레스트<br>（D4）</td><td><b>181</b> 急行 → 南元邑事務所<br>再轉計程車</td><td>依 181 班次</td><td>班次稀、下車要叫車</td></tr>
+            <tr><td>山房山碳酸溫泉（D4）</td><td>西部路線（經和順／<br>慕瑟浦）需轉乘</td><td>班次少</td><td>較耗時，建議排自駕日</td></tr>
+            <tr><td>偶來市場（D4）</td><td>西歸浦市區步行／市區公車</td><td>—</td><td>市場在市區、步行可達</td></tr>
+        </table>
+            </div>
+        </details>
+        <div class="plan-block bus"><b>⚠️ 公車弱點</b><br>山房山溫泉、冬柏森林、1100 高地、吾羅洞秘境 班次少、需轉乘或叫車——這幾點正是「混合版」建議用車的時段。</div>
+
+        <div class="plan-pros">
+            <div class="pro"><b>優點</b><br>最省錢、不用搶停車位、不換旅館、攻頂日不用顧車</div>
+            <div class="con"><b>缺點</b><br>D4 南部一日來回較長、部分景點班次受限、清晨首班 06:00 才有</div>
+        </div>
+    </div>
+
+    <p class="map-sub" style="margin-top:12px">※ 公車路線與時刻請以 카카오맵／Naver 地圖即時查詢為準。</p>
+    </details>
+</section>
+
+<div class="container">
+
+    <!-- DAY 1 -->
+    <section class="day-section" id="day1">
+        <h2 class="day-title">📅 DAY 1：01/27 (二) 初抵海島．落地海鮮飯卷．點燈松林夜市</h2>
+        <div class="highlight-bar">💡 今日亮點：落地首衝機場旁文青海鮮飯卷，夜晚漫步點燈奇幻松林夜市</div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th class="time-col">時間軸</th>
+                    <th>預定行程與活動內容</th>
+                    <th class="location-col">🗺️ 景點定位 / 💡 小資核心備註</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="time-col" data-label="時間軸">09:00 - 10:00</td>
+                    <td data-label="行程"><b>濟州國際機場抵達</b><br>航班降落，3人一同辦理入境手續與提取行李。
+                        <div class="img-container">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Jejuairport2024.jpg/960px-Jejuairport2024.jpg" alt="濟州國際機場" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='&lt;div class=\'img-fallback\'&gt;圖片需連線載入&lt;/div&gt;'">
+                            <div class="img-caption">實景：濟州國際機場入境大廳</div>
+                        </div>
+                    </td>
+                    <td data-label="定位">濟州國際機場 (Jeju International Airport)<br><a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=제주국제공항" target="_blank" rel="noopener">📍 Google 地圖</a></td>
+                </tr>
+                <tr>
+                    <td class="time-col" data-label="時間軸">10:00 - 10:30</td>
+                    <td data-label="行程"><b>取車與車輛檢查</b><br>前往機場旁指定取車處，領取中型 SUV（冬天厚重行李多，大車平攤划算）。
+                        <div class="img-container">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Avis_car_rental_agency_at_Philadelphia_International_Airport.jpg/960px-Avis_car_rental_agency_at_Philadelphia_International_Airport.jpg" alt="機場租車" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='&lt;div class=\'img-fallback\'&gt;圖片需連線載入&lt;/div&gt;'">
+                            <div class="img-caption">實景：機場旁租車中心領取中型 SUV</div>
+                        </div>
+                    </td>
+                    <td data-label="定位">在地高CP值車行（全險保障）<br><a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=제주공항+렌터카" target="_blank" rel="noopener">📍 Google 地圖</a></td>
+                </tr>
+                <tr>
+                    <td class="time-col" data-label="時間軸">10:30 - 12:00</td>
+                    <td data-label="行程">🍜 <b>午餐：瑞宇地方餐廳（濟州海鮮飯卷）</b><br>出機場開車僅7分鐘！落地第一餐吃現煮熱呼呼海鮮拉麵，配上鋪滿鮮甜蝦肉的招牌海鮮飯卷。
+                        <div class="img-container">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Assorted_Vegetable_Ramen_-_Seafood_flavor_%28Samyang%29_20210825_002.jpg/960px-Assorted_Vegetable_Ramen_-_Seafood_flavor_%28Samyang%29_20210825_002.jpg" alt="海鮮拉麵飯卷" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='&lt;div class=\'img-fallback\'&gt;圖片需連線載入&lt;/div&gt;'">
+                            <div class="img-caption">實景：招牌海鮮拉麵與鮮蝦海鮮飯卷</div>
+                        </div>
+                    </td>
+                    <td data-label="定位"><a href="https://instagram.com" target="_blank" rel="noopener">瑞宇地方餐廳 (서우제주공항본점)</a><br>💰 <i>三人消費約 NT$ 600 - $800</i><br><a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=서우+제주공항본점" target="_blank" rel="noopener">📍 Google 地圖</a></td>
+                </tr>
+                <tr>
+                    <td class="time-col" data-label="時間軸">12:30 - 13:30</td>
+                    <td data-label="行程"><b>公寓式酒店 Check-in</b><br>前往濟州市區優質公寓放置行李，3人享受房內專屬私人衛浴。
+                        <div class="img-container">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Bed_in_hotel_room_4.jpg/960px-Bed_in_hotel_room_4.jpg" alt="蓮洞公寓" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='&lt;div class=\'img-fallback\'&gt;圖片需連線載入&lt;/div&gt;'">
+                            <div class="img-caption">實景：蓮洞商圈獨立公寓房型</div>
+                        </div>
+                    </td>
+                    <td data-label="定位">蓮洞商圈生活機能極強之獨立公寓<br><a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=제주+연동" target="_blank" rel="noopener">📍 Google 地圖</a></td>
+                </tr>
+                <tr>
+                    <td class="time-col" data-label="時間軸">14:00 - 15:30</td>
+                    <td data-label="行程"><b>冬攀裝備現場租借 &amp; 超市大補給</b><br>前往戶外用品店，現場租借後天攻頂必備的<b>「簡易冰爪」與「登山杖」</b>。隨後至樂天超市買足暖暖包與山頂高熱量行動糧食。
+                        <div class="img-container">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Lotte_mart_Sangmu_branch_20190521_180530.jpg/960px-Lotte_mart_Sangmu_branch_20190521_180530.jpg" alt="登山裝備租借" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='&lt;div class=\'img-fallback\'&gt;圖片需連線載入&lt;/div&gt;'">
+                            <div class="img-caption">實景：租借冰爪登山杖並至超市補給</div>
+                        </div>
+                    </td>
+                    <td data-label="定位">市區專業用品店<br>⚠️ <i>沒帶冰爪會被管理員拒絕入山</i><br><a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=롯데마트+제주점" target="_blank" rel="noopener">📍 Google 地圖（樂天超市）</a></td>
+                </tr>
+                <tr>
+                    <td class="time-col" data-label="時間軸">18:00 - 20:30</td>
+                    <td data-label="行程">🍔 <b>晚餐：漢拏樹木園露天點燈夜市</b><br>冬日照常營業！一到夜晚，高聳松樹林間點滿萬盞橘黃色燈泡。圍在露天座椅邊吃餐車現烤黑豬肉串、熱魚板湯，便宜有氣氛。
+                        <div class="img-container">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Jeju_dongmun_market_1.JPG/960px-Jeju_dongmun_market_1.JPG" alt="點燈松林夜市" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='&lt;div class=\'img-fallback\'&gt;圖片需連線載入&lt;/div&gt;'">
+                            <div class="img-caption">實景：松樹林間萬盞橘黃燈泡的點燈夜市</div>
+                        </div>
+                    </td>
+                    <td data-label="定位"><a href="https://visitjeju.net" target="_blank" rel="noopener">漢拏樹木園夜市 (수목원길야시장)</a><br>⏰ <i>冬季營業：18:00 - 22:00</i><br><a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=수목원길야시장" target="_blank" rel="noopener">📍 Google 地圖</a></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="meta-box">
+            <p><b>🍱 今日餐食安排：</b>【早餐】機上精緻簡餐 / 【午餐】瑞宇地方餐廳海鮮拉麵飯卷 / 【晚餐】漢拏樹木園夜市小餐車美食大探索</p>
+            <p><b>🏨 今日住宿地點：</b><a href="https://plott.co.kr" target="_blank" rel="noopener">Urbanstay Jeju Airport (濟州機場爾本斯泰公寓酒店)</a> 或同級（豪華三人獨立公寓房、<b>附專屬獨立衛浴</b>、獨立滾筒洗衣機）。<a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=Urbanstay+Jeju+Airport" target="_blank" rel="noopener">📍 Google 地圖</a></p>
+        </div>
+    </section>
+
+    <!-- DAY 2 -->
+    <section class="day-section" id="day2">
+        <h2 class="day-title">📅 DAY 2：01/28 (三) 杉樹森林熱身．吾羅洞冬景寂靜秘境．囤積登山乾糧</h2>
+        <div class="highlight-bar">💡 今日亮點：漫步免費芬多精森林暖身，造訪全黑白枯枝的極致孤寂秘境荒原</div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th class="time-col">時間軸</th>
+                    <th>預定行程與活動內容</th>
+                    <th class="location-col">🗺️ 景點定位 / 💡 小資核心備註</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="time-col" data-label="時間軸">10:00 - 12:00</td>
+                    <td data-label="行程">🌟 <b>漢拿林木園 (한라수목원)</b><br><b>完全免費！</b>避開高額門票。冬天的杉樹林高聳入天，不僅能幫你們擋住外面的刺骨寒風，漫步其間還能幫明天的雙腿做適度熱身。
+                        <div class="img-container">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/6/68/Arboretum_of_Halla1.jpg" alt="漢拿林木園杉樹林" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='&lt;div class=\'img-fallback\'&gt;圖片需連線載入&lt;/div&gt;'">
+                            <div class="img-caption">實景：高聳入天的冬日杉樹林步道</div>
+                        </div>
+                    </td>
+                    <td data-label="定位">濟州市區漢拿林木園步道<br><span class="badge badge-blue">免門票</span><br><a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=한라수목원" target="_blank" rel="noopener">📍 Google 地圖</a></td>
+                </tr>
+                <tr>
+                    <td class="time-col" data-label="時間軸">13:00 - 14:00</td>
+                    <td data-label="行程">🍔 <b>午餐與外帶登山乾糧</b><br>前往在地名店享用輕食午餐。並直接在此外帶明天登山要在山頂救命吃的高能量精緻麵包與紫菜包飯。
+                        <div class="img-container">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Gimbap_%28pixabay%29.jpg/960px-Gimbap_%28pixabay%29.jpg" alt="輕食午餐麵包" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='&lt;div class=\'img-fallback\'&gt;圖片需連線載入&lt;/div&gt;'">
+                            <div class="img-caption">實景：輕食午餐並外帶登山高能量乾糧</div>
+                        </div>
+                    </td>
+                    <td data-label="定位">名店 Maison de Petit Fou<br>🚨 <i>務必買足明天山頂乾糧</i><br><a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=Maison+de+petit+four+제주" target="_blank" rel="noopener">📍 Google 地圖</a></td>
+                </tr>
+                <tr>
+                    <td class="time-col" data-label="時間軸">15:30 - 17:00</td>
+                    <td data-label="行程">🌟 <b>🚀 吾羅洞冬景秘境</b><br>位置直接雙手奉上。1月底冬天是一整片漫無邊際、震撼寂靜的雪白荒原與黑枯枝，背景就是白雪皚皚的漢拏山，拍出孤寂美學大片。
+                        <div class="img-container">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Hallasan_in_Winter.jpg/960px-Hallasan_in_Winter.jpg" alt="吾羅洞雪白荒原" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='&lt;div class=\'img-fallback\'&gt;圖片需連線載入&lt;/div&gt;'">
+                            <div class="img-caption">實景：雪白荒原與黑枯枝，背景漢拏山</div>
+                        </div>
+                    </td>
+                    <td data-label="定位">導航輸入：<b>제주특별자치도 제주시 오라2동 산76</b><br>(濟州市吾羅二洞山76號)<br><a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=제주시+오라2동+산76" target="_blank" rel="noopener">📍 Google 地圖</a></td>
+                </tr>
+                <tr>
+                    <td class="time-col" data-label="時間軸">18:00 - 19:30</td>
+                    <td data-label="行程">🍜 <b>晚餐：三代麵條（삼대국수회관）</b><br>吃一碗大碗滿意、熱氣騰騰的在地傳統豬肉湯麵，湯頭濃郁香醇，徹底暖活全身。
+                        <div class="img-container">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Gogi-guksu.jpg/960px-Gogi-guksu.jpg" alt="三代麵條豬肉湯麵" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='&lt;div class=\'img-fallback\'&gt;圖片需連線載入&lt;/div&gt;'">
+                            <div class="img-caption">實景：熱騰騰的傳統豬肉湯麵</div>
+                        </div>
+                    </td>
+                    <td data-label="定位">濟州傳統麵條文化街<br>💰 <i>大碗豬肉湯麵每人約 NT$ 250</i><br><a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=삼대국수회관" target="_blank" rel="noopener">📍 Google 地圖</a></td>
+                </tr>
+                <tr>
+                    <td class="time-col" data-label="時間軸">20:00 ~</td>
+                    <td data-label="行程"><b>登山前夜整備</b><br>早早回公寓休息，利用房內熱水壺灌滿3人的登山保溫瓶、檢查個人免費預約的入山 QR 碼。
+                        <div class="img-container">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Camp_Crampons.jpg/960px-Camp_Crampons.jpg" alt="登山前夜整備" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='&lt;div class=\'img-fallback\'&gt;圖片需連線載入&lt;/div&gt;'">
+                            <div class="img-caption">實景：灌熱水、檢查入山 QR 碼整備裝備</div>
+                        </div>
+                    </td>
+                    <td data-label="定位">Urbanstay 獨立房間<br><a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=Urbanstay+Jeju+Airport" target="_blank" rel="noopener">📍 Google 地圖</a></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="meta-box">
+            <p><b>🍱 今日餐食安排：</b>【早餐】公寓自理 / 【午餐】Maison de Petit Fou 輕食 / 【晚餐】三代麵條傳統豬肉湯麵</p>
+            <p><b>🏨 今日住宿地點：</b><a href="https://plott.co.kr" target="_blank" rel="noopener">Urbanstay Jeju Airport (濟州機場爾本斯泰公寓酒店)</a> 或同級（豪華三人獨立公寓房、<b>附專屬獨立衛浴</b>）。<a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=Urbanstay+Jeju+Airport" target="_blank" rel="noopener">📍 Google 地圖</a></p>
+        </div>
+    </section>
+
+    <!-- DAY 3 -->
+    <section class="day-section" id="day3">
+        <h2 class="day-title">📅 DAY 3：01/29 (四) 世紀挑戰！齊心征服南韓最高峰．漢拏山冰雪白鹿潭</h2>
+        <div class="highlight-bar">💡 今日亮點：踏過銀白霧凇森林，成功攻頂海拔 1950 米雪白火山口，下山熱湯飯大復活</div>
+        <table>
+            <thead>
+                <tr>
+                    <th class="time-col">時間軸</th>
+                    <th>預定行程與活動內容</th>
+                    <th class="location-col">🗺️ 景點定位 / 💡 小資核心備註</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="time-col" data-label="時間軸">05:30 - 06:30</td>
+                    <td data-label="行程"><b>清晨摸黑出發</b><br>摸黑起床，3人打包好防寒登山裝備，開車直奔登山口（或合搭計程車以免車位停滿）。
+                        <div class="img-container">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/Winter_in_Schmiedefeld_am_Rennsteig.jpg/960px-Winter_in_Schmiedefeld_am_Rennsteig.jpg" alt="清晨出發" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='&lt;div class=\'img-fallback\'&gt;圖片需連線載入&lt;/div&gt;'">
+                            <div class="img-caption">實景：清晨摸黑開往城板岳登山口</div>
+                        </div>
+                    </td>
+                    <td data-label="定位">濟州市區 ➔ 漢拏山移動<br><a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=성판악탐방안내소" target="_blank" rel="noopener">📍 Google 地圖（城板岳登山口）</a></td>
+                </tr>
+                <tr>
+                    <td class="time-col" data-label="時間軸">06:30 - 11:30</td>
+                    <td data-label="行程">🌟 <b>城板岳登山口 ➔ 杜鵑花田蔽護所</b><br>驗證免費預約的 QR Code，穿上冰爪正式開爬！沿途是一整片夢幻的銀白霧凇森林。
+                        <div class="img-container">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Winter_Hallasan_Summit.jpg/960px-Winter_Hallasan_Summit.jpg" alt="漢拏山冬攀霧凇" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='&lt;div class=\'img-fallback\'&gt;圖片需連線載入&lt;/div&gt;'">
+                            <div class="img-caption">實景：步道兩側結滿銀白色的霧凇冰晶</div>
+                        </div>
+                    </td>
+                    <td data-label="定位">城板岳登山步道<br>⚠️ <i>雪季強制穿冰爪入山</i><br><a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=성판악탐방로" target="_blank" rel="noopener">📍 Google 地圖</a></td>
+                </tr>
+                <tr>
+                    <td class="time-col" data-label="時間軸">11:30 - 12:00</td>
+                    <td data-label="行程">🚨 <b>生死管制時間分水嶺</b><br><b>嚴格限制！</b>三人必須在 11:30 前「全員通過」杜鵑花田蔽護所，否則禁止登頂。在蔽護所雪地上吃自備的熱水泡麵與飯捲。
+                        <div class="img-container">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Hallasan_in_Winter.jpg/960px-Hallasan_in_Winter.jpg" alt="杜鵑花田蔽護所" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='&lt;div class=\'img-fallback\'&gt;圖片需連線載入&lt;/div&gt;'">
+                            <div class="img-caption">實景：杜鵑花田蔽護所雪地野餐</div>
+                        </div>
+                    </td>
+                    <td data-label="定位">杜鵑花田中途管制哨<br><span class="badge badge-pink">11:30 準時清場</span><br><a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=진달래밭대피소" target="_blank" rel="noopener">📍 Google 地圖</a></td>
+                </tr>
+                <tr>
+                    <td class="time-col" data-label="時間軸">12:00 - 13:30</td>
+                    <td data-label="行程">🌟 <b>成功攻頂漢拏山：白鹿潭主峰</b><br>成功站在海拔 1950 米的雪白火山口石碑前拍下終身難忘的完登合照！
+                        <div class="img-container">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Winter_Baengnokdam.jpg/960px-Winter_Baengnokdam.jpg" alt="白鹿潭冬景" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='&lt;div class=\'img-fallback\'&gt;圖片需連線載入&lt;/div&gt;'">
+                            <div class="img-caption">實景：被厚厚白雪全面覆蓋的壯麗白鹿潭火山口</div>
+                        </div>
+                    </td>
+                    <td data-label="定位">漢拏山白鹿潭主峰<br>⏰ <i>山頂 13:30 準時廣播下山</i><br><a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=한라산+백록담" target="_blank" rel="noopener">📍 Google 地圖</a></td>
+                </tr>
+                <tr>
+                    <td class="time-col" data-label="時間軸">13:30 - 17:00</td>
+                    <td data-label="行程"><b>安全步行下山 ➔ 領完登證書</b><br>沿原路安全下山回到登山口，在機器繳納 1,000 韓元，領取並拍照留念你們的紙本「漢拏山完登證書」。
+                        <div class="img-container">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Winter_Hallasan_Summit.jpg/960px-Winter_Hallasan_Summit.jpg" alt="漢拏山完登證書" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='&lt;div class=\'img-fallback\'&gt;圖片需連線載入&lt;/div&gt;'">
+                            <div class="img-caption">實景：紙本漢拏山完登證書</div>
+                        </div>
+                    </td>
+                    <td data-label="定位">城板岳登山口服務處<br>💰 <i>證書費 1,000 韓元</i><br><a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=성판악탐방안내소" target="_blank" rel="noopener">📍 Google 地圖</a></td>
+                </tr>
+                <tr>
+                    <td class="time-col" data-label="時間軸">18:30 - 20:00</td>
+                    <td data-label="行程">🍜 <b>晚餐：24小時馬鈴薯排骨湯</b><br>下山後全身疲憊酸痛，最適合來一鍋濃郁香辣的馬鈴薯豬骨湯，大口啃肉喝熱湯，每人只要小資銅板價，絕對是下山救星！
+                        <div class="img-container">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Gamja-tang_5.jpg/960px-Gamja-tang_5.jpg" alt="馬鈴薯排骨湯" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='&lt;div class=\'img-fallback\'&gt;圖片需連線載入&lt;/div&gt;'">
+                            <div class="img-caption">實景：濃郁香辣的馬鈴薯豬骨湯</div>
+                        </div>
+                    </td>
+                    <td data-label="定位">市區名店 24시뼈다귀해장국<br>💰 <i>大排骨熱湯鍋，小資高CP值</i><br><a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=서귀포+뼈다귀해장국" target="_blank" rel="noopener">📍 Google 地圖</a></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="meta-box">
+            <p><b>🍱 今日餐食安排：</b>【早餐】清晨超商御飯糰 / 【午餐】山頂蔽護所雪地野餐（自備保溫瓶熱水泡麵+乾糧） / 【晚餐】24小時馬鈴薯排骨湯大復活</p>
+            <p><b>🏨 今日住宿地點：</b><a href="https://google.com" target="_blank" rel="noopener">Bricks Stay 西歸浦店</a> 或同級老牌商旅（三人獨立海景房、<b>附專屬獨立衛浴</b>、100%私人隱私空間、好停車）。<a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=Bricks+Stay+서귀포" target="_blank" rel="noopener">📍 Google 地圖</a></p>
+        </div>
+    </section>
+
+    <!-- DAY 4 -->
+    <section class="day-section" id="day4">
+        <h2 class="day-title south">📅 DAY 4：01/30 (五) 西歸浦市場尋寶．鐵腿救星碳酸溫泉．滿開山茶花森林</h2>
+        <div class="highlight-bar">💡 今日亮點：泡溫泉徹底瓦解鐵腿酸痛，漫步冬日最火紅的粉紅山茶花毯</div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th class="time-col">時間軸</th>
+                    <th>預定行程與活動內容</th>
+                    <th class="location-col">🗺️ 景點定位 / 💡 小資核心備註</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="time-col" data-label="時間軸">10:30 - 11:30</td>
+                    <td data-label="行程"><b>自然醒 ➔ 前往西歸浦市區</b><br>經歷昨日的激戰，今天睡到自然醒。放慢步調驅車前往南部。
+                        <div class="img-container">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/Jeju_Island_20141128_03_%2815895786961%29.jpg/960px-Jeju_Island_20141128_03_%2815895786961%29.jpg" alt="南線移動" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='&lt;div class=\'img-fallback\'&gt;圖片需連線載入&lt;/div&gt;'">
+                            <div class="img-caption">實景：放慢步調驅車前往濟州南部</div>
+                        </div>
+                    </td>
+                    <td data-label="定位">濟州島南線移動<br><a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=서귀포시" target="_blank" rel="noopener">📍 Google 地圖（西歸浦市）</a></td>
+                </tr>
+                <tr>
+                    <td class="time-col" data-label="時間軸">11:30 - 13:00</td>
+                    <td data-label="行程">🍔 <b>午餐：西歸浦每日偶來市場</b><br>在市場內自由大探索，分食熱呼呼的黑豬肉可樂餅、年糕、現切刺身等在地特色銅板小吃。
+                        <div class="img-container">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Seogwipo_Maeil_Olle_Market_03.jpg/960px-Seogwipo_Maeil_Olle_Market_03.jpg" alt="偶來市場小吃" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='&lt;div class=\'img-fallback\'&gt;圖片需連線載入&lt;/div&gt;'">
+                            <div class="img-caption">實景：黑豬肉可樂餅、年糕等市場銅板小吃</div>
+                        </div>
+                    </td>
+                    <td data-label="定位">西歸浦每日偶來市場 (서귀포매일올레시장)<br><a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=서귀포매일올레시장" target="_blank" rel="noopener">📍 Google 地圖</a></td>
+                </tr>
+                <tr>
+                    <td class="time-col" data-label="時間軸">13:30 - 15:30</td>
+                    <td data-label="行程">🌟 <b>山房山碳酸溫泉 (산방산탄산온천)</b><br>鐵腿終結者！🚨 <i>出發前先在網路買好電子優惠券。</i>3人一起泡入獨特的室外碳酸露天溫泉，背靠雄偉的山房山，對緩解昨天登山的全身酸痛與關節疲勞有奇效！
+                        <div class="img-container">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Sanbangsan_%282025-01%29.jpg/960px-Sanbangsan_%282025-01%29.jpg" alt="山房山碳酸溫泉" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='&lt;div class=\'img-fallback\'&gt;圖片需連線載入&lt;/div&gt;'">
+                            <div class="img-caption">實景：背靠山房山的露天碳酸溫泉</div>
+                        </div>
+                    </td>
+                    <td data-label="定位">山房山碳酸溫泉<br><span class="badge badge-orange">網購優惠券更省</span><br><a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=산방산탄산온천" target="_blank" rel="noopener">📍 Google 地圖</a></td>
+                </tr>
+                <tr>
+                    <td class="time-col" data-label="時間軸">16:00 - 17:30</td>
+                    <td data-label="行程">🌟 <b>冬柏森林 (동백포레스트)</b><br><b>拒絕高價大眾植物園！</b>近年最紅在地山茶花秘境。1月底一整片圓滾滾的矮樹叢開滿粉紅山茶花，地上落花如紅毯，拍照極度夢幻。
+                        <div class="img-container">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/2025-04-04_%ED%83%84%ED%95%B5%EC%84%A0%EA%B3%A0%EC%A7%91%ED%9A%8C_%EA%B7%B8%EB%9E%98%ED%94%BC%ED%8B%B0_%EC%A0%9C%EC%A3%BC4%C2%B73%EB%8F%99%EB%B0%B1%EA%BD%83.jpg/960px-2025-04-04_%ED%83%84%ED%95%B5%EC%84%A0%EA%B3%A0%EC%A7%91%ED%9A%8C_%EA%B7%B8%EB%9E%98%ED%94%BC%ED%8B%B0_%EC%A0%9C%EC%A3%BC4%C2%B73%EB%8F%99%EB%B0%B1%EA%BD%83.jpg" alt="冬柏森林山茶花" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='&lt;div class=\'img-fallback\'&gt;圖片需連線載入&lt;/div&gt;'">
+                            <div class="img-caption">實景：冬日限定的滿開粉紅山茶花秘境，極具美感</div>
+                        </div>
+                    </td>
+                    <td data-label="定位">西歸浦山茶花秘境樹林<br><a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=동백포레스트" target="_blank" rel="noopener">📍 Google 地圖</a></td>
+                </tr>
+                <tr>
+                    <td class="time-col" data-label="時間軸">18:00 - 19:30</td>
+                    <td data-label="行程">🍔 <b>晚餐：在地大叔私房燉豬肉定食</b><br>避開觀光餐廳，享用西歸浦在地大叔、司機常去的高 CP 值燉豬肉定食。
+                        <div class="img-container">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/A_dish_of_Pork_Belly_in_the_table.jpg/960px-A_dish_of_Pork_Belly_in_the_table.jpg" alt="燉豬肉定食" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='&lt;div class=\'img-fallback\'&gt;圖片需連線載入&lt;/div&gt;'">
+                            <div class="img-caption">實景：西歸浦在地高CP值燉豬肉定食</div>
+                        </div>
+                    </td>
+                    <td data-label="定位">西歸浦在地平價小吃店<br><a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=서귀포+백반+맛집" target="_blank" rel="noopener">📍 Google 地圖</a></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="meta-box">
+            <p><b>🍱 今日餐食安排：</b>【早餐】飯店自理 / 【午餐】西歸浦每日偶來市場銅板美食 / 【晚餐】在地小資燉豬肉定食</p>
+            <p><b>🏨 今日住宿地點：</b><a href="https://google.com" target="_blank" rel="noopener">Bricks Stay 西歸浦店</a> 或同級老牌商旅（三人獨立海景房、<b>附專屬獨立衛浴</b>）。<a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=Bricks+Stay+서귀포" target="_blank" rel="noopener">📍 Google 地圖</a></p>
+        </div>
+    </section>
+
+    <!-- DAY 5 -->
+    <section class="day-section" id="day5">
+        <h2 class="day-title orange-theme">📅 DAY 5：01/31 (六) 歐風橘子園咖啡廳．免爬山 1100 高地雪白樹海．超市大掃貨</h2>
+        <div class="highlight-bar">💡 今日亮點：在老歐洲大窗景前喝橘子咖啡拍橘子隧道，開車直達冰雪奇緣夢幻雪世界</div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th class="time-col">時間軸</th>
+                    <th>預定行程與活動內容</th>
+                    <th class="location-col">🗺️ 景點定位 / 💡 小資核心備註</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="time-col" data-label="時間軸">10:00 - 12:00</td>
+                    <td data-label="行程">🌟 <b>橘花閣樓 (Cafe gyulkkot darak)</b><br><b>澄清：就是這家！</b>隱身超大橘子園的復古歐風咖啡廳。1月底金黃橘子掛滿樹。免採橘子門票，低消一人點一杯橘子拿鐵，就能在專屬保留的大窗景和後院橘子隧道拍網美大片！
+                        <div class="img-container">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/%EC%A0%9C%EC%A3%BC_%EB%8F%84%EB%A0%A8%EB%8F%99_%EA%B7%A4%EB%82%98%EB%AC%B4%EB%A5%98_-_%EC%82%B0%EA%B7%A4%EB%82%98%EB%AC%B4.jpg/960px-%EC%A0%9C%EC%A3%BC_%EB%8F%84%EB%A0%A8%EB%8F%99_%EA%B7%A4%EB%82%98%EB%AC%B4%EB%A5%98_-_%EC%82%B0%EA%B7%A4%EB%82%98%EB%AC%B4.jpg" alt="橘花閣樓咖啡廳" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='&lt;div class=\'img-fallback\'&gt;圖片需連線載入&lt;/div&gt;'">
+                            <div class="img-caption">實景：橘子園裡的復古歐風咖啡廳與橘子隧道</div>
+                        </div>
+                    </td>
+                    <td data-label="定位"><a href="https://instagram.com" target="_blank" rel="noopener">橘花閣樓咖啡廳 (귤꽃다락)</a><br>💰 <i>每人低消飲品約 NT$ 160</i><br><a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=귤꽃다락" target="_blank" rel="noopener">📍 Google 地圖</a></td>
+                </tr>
+                <tr>
+                    <td class="time-col" data-label="時間軸">13:00 - 15:30</td>
+                    <td data-label="行程">🌟 <b>漢拏山 1100 高地 (1100고지)</b><br><b>免爬山賞雪勝地！</b>直接沿1100公路開車上去。路邊全是厚厚積雪與冰晶樹海，彷彿置身冰雪奇緣世界。還可以與經典純白鹿雕像合照。
+                        <div class="img-container">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Winter_forest_after_snow_storm_%2840384754601%29.jpg/960px-Winter_forest_after_snow_storm_%2840384754601%29.jpg" alt="1100高地雪景" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='&lt;div class=\'img-fallback\'&gt;圖片需連線載入&lt;/div&gt;'">
+                            <div class="img-caption">實景：在地人最愛的免爬山賞雪祕境公路，難得的雪白樹海</div>
+                        </div>
+                    </td>
+                    <td data-label="定位">漢拏山1100高地休憩所<br><span class="badge badge-blue">免門票</span><br><a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=1100고지휴게소" target="_blank" rel="noopener">📍 Google 地圖</a></td>
+                </tr>
+                <tr>
+                    <td class="time-col" data-label="時間軸">16:00 - 16:30</td>
+                    <td data-label="行程"><b>歸還登山裝備</b><br>驅車返回濟州市區，歸還 3 人的租借冰爪、登山杖。
+                        <div class="img-container">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Strap-on_crampon.JPG/960px-Strap-on_crampon.JPG" alt="歸還登山裝備" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='&lt;div class=\'img-fallback\'&gt;圖片需連線載入&lt;/div&gt;'">
+                            <div class="img-caption">實景：返回市區歸還冰爪與登山杖</div>
+                        </div>
+                    </td>
+                    <td data-label="定位">濟州市區原租借用品店<br><a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=제주시+등산용품점" target="_blank" rel="noopener">📍 Google 地圖</a></td>
+                </tr>
+                <tr>
+                    <td class="time-col" data-label="時間軸">17:00 - 18:30</td>
+                    <td data-label="行程">🛒 <b>大型 E-MART 超市伴手禮大採購</b><br><b>避開觀光伴手禮店！</b>超市裡的橘子派、漢拏山燒酒、海苔才是真正的在地便宜價。
+                        <div class="img-container">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/E-mart_Gwangju_branch_20190521_102824.jpg/960px-E-mart_Gwangju_branch_20190521_102824.jpg" alt="E-MART超市採購" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='&lt;div class=\'img-fallback\'&gt;圖片需連線載入&lt;/div&gt;'">
+                            <div class="img-caption">實景：超市裡的橘子派、燒酒、海苔伴手禮</div>
+                        </div>
+                    </td>
+                    <td data-label="定位">濟州市區大行 E-MART<br><a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=이마트+제주점" target="_blank" rel="noopener">📍 Google 地圖</a></td>
+                </tr>
+                <tr>
+                    <td class="time-col" data-label="時間軸">19:00 - 20:30</td>
+                    <td data-label="行程">🍔 <b>晚餐：在地平價烤肉定食</b><br>旅程最後一晚，在蓮洞商圈享用在地高 CP 值的烤肉飯定食，小資又滿足。
+                        <div class="img-container">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Korean.cuisine-Samgyeopsal-01.jpg/960px-Korean.cuisine-Samgyeopsal-01.jpg" alt="在地烤肉定食" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='&lt;div class=\'img-fallback\'&gt;圖片需連線載入&lt;/div&gt;'">
+                            <div class="img-caption">實景：蓮洞商圈在地高CP值烤肉飯定食</div>
+                        </div>
+                    </td>
+                    <td data-label="定位">蓮洞商圈美食街<br>💰 <i>每人花費約 NT$ 350</i><br><a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=제주+연동+먹자골목" target="_blank" rel="noopener">📍 Google 地圖</a></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="meta-box">
+            <p><b>🍱 今日餐食安排：</b>【早餐】飯店自理 / 【午餐】網美橘子園咖啡廳精緻午茶（青橘起司蛋糕+橘子拿鐵） / 【晚餐】蓮洞在地平價烤肉定食</p>
+            <p><b>🏨 今日住宿地點：</b><a href="https://plott.co.kr" target="_blank" rel="noopener">Urbanstay Jeju Airport (濟州機場爾本斯泰公寓酒店)</a> 或同級（豪華三人獨立公寓房、<b>附專屬獨立衛浴</b>）。<a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=Urbanstay+Jeju+Airport" target="_blank" rel="noopener">📍 Google 地圖</a></p>
+        </div>
+    </section>
+
+    <!-- DAY 6 -->
+    <section class="day-section" id="day6">
+        <h2 class="day-title">📅 DAY 6：02/01 (日) 濟州島 ➔ 台灣：還車、機場免稅店巡禮、平安返家</h2>
+        <div class="highlight-bar">💡 今日亮點：圓滿還車，最後免稅店伴手禮巡禮，搭機平安返家</div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th class="time-col">時間軸</th>
+                    <th>預定行程與活動內容</th>
+                    <th class="location-col">🗺️ 景點定位 / 💡 小資核心備註</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="time-col" data-label="時間軸">09:00 - 09:30</td>
+                    <td data-label="行程"><b>辦理退房與退租車</b><br>離開公寓，開車前往機場旁租車公司辦理還車與全險檢查。
+                        <div class="img-container">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Car_rental_kiosks_at_Sarajevo_airport.jpg/960px-Car_rental_kiosks_at_Sarajevo_airport.jpg" alt="機場還車" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='&lt;div class=\'img-fallback\'&gt;圖片需連線載入&lt;/div&gt;'">
+                            <div class="img-caption">實景：機場旁租車公司辦理還車與全險檢查</div>
+                        </div>
+                    </td>
+                    <td data-label="定位">濟州機場旁指定還車點<br><a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=제주공항+렌터카" target="_blank" rel="noopener">📍 Google 地圖</a></td>
+                </tr>
+                <tr>
+                    <td class="time-col" data-label="時間軸">09:40 - 11:40</td>
+                    <td data-label="行程"><b>濟州國際機場辦理登機</b><br>3人一起辦理登機托運、機場退稅，並在免稅店進行最後補貨。
+                        <div class="img-container">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Jejuairport2024.jpg/960px-Jejuairport2024.jpg" alt="機場辦理登機" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='&lt;div class=\'img-fallback\'&gt;圖片需連線載入&lt;/div&gt;'">
+                            <div class="img-caption">實景：出境大廳辦理登機與免稅店補貨</div>
+                        </div>
+                    </td>
+                    <td data-label="定位">濟州國際機場出境大廳<br><a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=제주국제공항" target="_blank" rel="noopener">📍 Google 地圖</a></td>
+                </tr>
+                <tr>
+                    <td class="time-col" data-label="時間軸">11:40 ~</td>
+                    <td data-label="行程">✈️ <b>搭機返台</b><br>準時登機，飛離濟州島，圓滿結束省錢、隱私足夠、看滿雪景與茶花的完美濟州之旅！
+                        <div class="img-container">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/34/Airplane_window_capture.jpg/960px-Airplane_window_capture.jpg" alt="搭機返台" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='&lt;div class=\'img-fallback\'&gt;圖片需連線載入&lt;/div&gt;'">
+                            <div class="img-caption">實景：準時登機，平安飛離濟州島返台</div>
+                        </div>
+                    </td>
+                    <td data-label="定位">返回台灣航班<br><a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=제주국제공항" target="_blank" rel="noopener">📍 Google 地圖（濟州機場）</a></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="meta-box">
+            <p><b>🍱 今日餐食安排：</b>【早餐】公寓內簡易自理 / 【午餐】機上精緻簡餐 / 【晚餐】溫暖的家</p>
+        </div>
+    </section>
+
+</div>
+
+<div class="footer">🧳 濟州島冬季小資六日 ﹒ 自駕行程手冊</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// ---- 行程地圖 ----
+(function () {
+    var el = document.getElementById('jejuMap');
+    if (!el) return;
+    if (typeof L === 'undefined') {
+        el.innerHTML = '<div style="padding:40px 16px;text-align:center;color:#64748b">地圖需要連線載入</div>';
+        el.style.height = 'auto';
+        return;
+    }
+    var dayColor = { 1: '#2a75d3', 2: '#0ea5e9', 3: '#6366f1', 4: '#ff4a7d', 5: '#ff7a00', 6: '#10b981' };
+    // [緯度, 經度, 天數, 名稱, 類型('spot'/'stay'), 是否近似]
+    var spots = [
+        [33.5071, 126.4916, 1, '濟州國際機場（Day 1 抵達 / Day 6 離境）', 'spot', false],
+        [33.5050, 126.4880, 1, '瑞宇海鮮飯卷（機場旁）', 'spot', true],
+        [33.4699, 126.4926, 1, '漢拏樹木園露天點燈夜市', 'spot', false],
+        [33.4695, 126.4926, 2, '漢拿樹木園（杉樹林）', 'spot', false],
+        [33.4470, 126.5230, 2, '吾羅洞冬景秘境（近似位置）', 'spot', true],
+        [33.5067, 126.5301, 2, '三代麵條 삼대국수회관', 'spot', false],
+        [33.3850, 126.6191, 3, '城板岳登山口', 'spot', false],
+        [33.3698, 126.5555, 3, '杜鵑花田蔽護所', 'spot', false],
+        [33.3621, 126.5333, 3, '漢拏山 白鹿潭主峰', 'spot', false],
+        [33.2502, 126.5636, 4, '西歸浦每日偶來市場', 'spot', false],
+        [33.2489, 126.2987, 4, '山房山碳酸溫泉', 'spot', false],
+        [33.2876, 126.6450, 4, '冬柏森林 동백포레스트（近似位置）', 'spot', true],
+        [33.2700, 126.4200, 5, '橘花閣樓咖啡 귤꽃다락（近似位置）', 'spot', true],
+        [33.3577, 126.4627, 5, '漢拏山 1100 高地', 'spot', false],
+        [33.4848, 126.4802, 5, 'E-MART 新濟州店', 'spot', false],
+        [33.4940, 126.4895, 0, '🏨 住宿A：Urbanstay（濟州市．Day 1·2·5）', 'stay', false],
+        [33.2497, 126.5610, 0, '🏨 住宿B：Bricks Stay 西歸浦（Day 3·4）', 'stay', false]
+    ];
+
+    var map = L.map('jejuMap', { scrollWheelZoom: false }).setView([33.38, 126.53], 10);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+        attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+
+    var pts = [];
+    var byDay = {};      // 每天的標記
+    var stayMarkers = [];
+    function reg(key, m) { (byDay[key] = byDay[key] || []).push(m); }
+
+    spots.forEach(function (s) {
+        var lat = s[0], lng = s[1], day = s[2], label = s[3], type = s[4], approx = s[5];
+        var popup = '<b>' + label + '</b>' + (day ? '<br>DAY ' + day : '') + (approx ? '<br><span style="color:#94a3b8">※ 近似位置，請以實際導航為準</span>' : '');
+        var m;
+        if (type === 'stay') {
+            m = L.marker([lat, lng], {
+                icon: L.divIcon({ className: 'stay-pin', html: '🏨', iconSize: [30, 30], iconAnchor: [15, 28] })
+            });
+            stayMarkers.push(m);
+        } else {
+            m = L.circleMarker([lat, lng], {
+                radius: 8, color: '#fff', weight: 2,
+                fillColor: dayColor[day] || '#64748b', fillOpacity: 1
+            });
+            reg(String(day), m);
+            if (label.indexOf('機場') >= 0) reg('6', m); // Day6 = 機場（與 Day1 共用）
+        }
+        m.addTo(map).bindPopup(popup);
+        pts.push([lat, lng]);
+    });
+    map.fitBounds(pts, { padding: [35, 35] });
+
+    // 點圖例 → 放大到當天位置
+    document.querySelectorAll('.maplegend [data-day]').forEach(function (elm) {
+        elm.style.cursor = 'pointer';
+        elm.addEventListener('click', function () {
+            var key = elm.getAttribute('data-day');
+            var arr = key === 'stay' ? stayMarkers : byDay[key];
+            if (!arr || !arr.length) return;
+            var b = L.latLngBounds(arr.map(function (m) { return m.getLatLng(); }));
+            map.fitBounds(b, { padding: [70, 70], maxZoom: 14 });
+            arr[0].openPopup();
+        });
+    });
+})();
+</script>
+
+<script>
+(function () {
+    var nav = document.getElementById('dayNav');
+    if (!nav) return;
+    var links = [].slice.call(nav.querySelectorAll('a'));
+    var sections = links.map(function (a) {
+        return document.getElementById(a.getAttribute('href').slice(1));
+    });
+    var activeIdx = -1;
+
+    function onScroll() {
+        // 找出最後一個「頂端已捲過選單列」的區塊 = 目前所在那一天
+        var idx = 0;
+        for (var i = 0; i < sections.length; i++) {
+            if (sections[i] && sections[i].getBoundingClientRect().top <= 110) idx = i;
+        }
+        if (idx === activeIdx) return;
+        activeIdx = idx;
+        links.forEach(function (a, i) { a.classList.toggle('active', i === idx); });
+        // 讓目前這天的標籤水平滑入可視範圍
+        links[idx].scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    onScroll();
+})();
+</script>
+
+<script>
+// ---- 交通方案切換 ----
+(function () {
+    var tabs = [].slice.call(document.querySelectorAll('.plantabs button'));
+    var panels = {
+        car: document.getElementById('plan-car'),
+        mix: document.getElementById('plan-mix'),
+        bus: document.getElementById('plan-bus')
+    };
+    if (!tabs.length) return;
+    tabs.forEach(function (b) {
+        b.addEventListener('click', function () {
+            var key = b.getAttribute('data-plan');
+            tabs.forEach(function (x) { x.classList.toggle('active', x === b); });
+            Object.keys(panels).forEach(function (p) {
+                if (panels[p]) panels[p].classList.toggle('show', p === key);
+            });
+        });
+    });
+})();
+</script>
+
+</body>
+</html>
