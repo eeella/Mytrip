@@ -327,6 +327,11 @@
     .maplegend span { display: inline-flex; align-items: center; gap: 6px; }
     .maplegend i { width: 13px; height: 13px; border-radius: 50%; display: inline-block; border: 2px solid #fff; box-shadow: 0 0 0 1px var(--border); }
     .stay-pin { font-size: 24px; line-height: 1; text-align: center; filter: drop-shadow(0 2px 3px rgba(0,0,0,.35)); }
+    .stay-pin.sel { outline: 3px solid #0f172a; border-radius: 50%; background: rgba(255,255,255,.7); }
+    .rt-clear { margin-left: 8px; font: inherit; font-size: 12.5px; font-weight: 700; color: var(--blue-d); background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 999px; padding: 3px 12px; cursor: pointer; }
+    .rt-clear:hover { background: var(--blue); color: #fff; border-color: var(--blue); }
+    .route-result { display: none; margin-top: 10px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 11px 14px; font-size: 14px; color: var(--text-strong); }
+    .route-result.show { display: block; }
     .leaflet-popup-content { font-weight: 600; }
 
     /* ---------- Plan switch (car / bus) ---------- */
@@ -464,7 +469,9 @@
 <section class="mapwrap">
     <h2 class="map-title">🗺️ 行程地圖．Day 1–6 地理位置</h2>
     <p class="map-sub">各景點依天數分色，🏨 為兩間住宿據點。方便你對照大方向、挑選住宿位置。</p>
+    <p class="map-sub" style="margin-bottom:8px">📏 <b>算兩點車程：</b>在地圖上點 A 點 → 再點 B 點，會畫出路線並顯示車程。<button id="routeClear" class="rt-clear">清除路線</button></p>
     <div id="jejuMap"></div>
+    <div id="routeResult" class="route-result"></div>
     <div class="map-areas">
         <div class="a-north"><b>北部・濟州市</b><br>DAY 1・2・5（機場、蓮洞、樹木園、吾羅洞）<br>🏨 住宿A：Urbanstay</div>
         <div class="a-mid"><b>中部・漢拏山</b><br>DAY 3 攻頂、DAY 5 1100高地（中央山區）</div>
@@ -1071,7 +1078,9 @@
             reg(String(day), m);
             if (label.indexOf('機場') >= 0) reg('6', m); // Day6 = 機場（與 Day1 共用）
         }
+        m._label = label.split('（')[0];
         m.addTo(map).bindPopup(popup);
+        m.on('click', function () { onPick(m); });
         pts.push([lat, lng]);
     });
     map.fitBounds(pts, { padding: [35, 35] });
@@ -1088,6 +1097,46 @@
             arr[0].openPopup();
         });
     });
+
+    // ---- 點兩點：畫路線 + 顯示車程 ----
+    var picked = [], routeLine = null;
+    var resultEl = document.getElementById('routeResult');
+
+    function markSel(m, on) {
+        if (m.setStyle) { m.setStyle(on ? { color: '#0f172a', weight: 4 } : { color: '#fff', weight: 2 }); }
+        else if (m.getElement) { var el = m.getElement(); if (el) el.classList.toggle('sel', on); }
+    }
+    function showResult(html) { if (resultEl) { resultEl.innerHTML = html; resultEl.classList.add('show'); } }
+    function clearRoute() {
+        if (routeLine) { map.removeLayer(routeLine); routeLine = null; }
+        picked.forEach(function (m) { markSel(m, false); });
+        picked = [];
+        if (resultEl) { resultEl.classList.remove('show'); resultEl.innerHTML = ''; }
+    }
+    function onPick(m) {
+        if (picked.length >= 2) clearRoute();
+        picked.push(m); markSel(m, true);
+        if (picked.length === 1) {
+            showResult('📍 起點：<b>' + m._label + '</b>　請再點選另一個地點…');
+        } else {
+            var a = picked[0], b = picked[1], A = a.getLatLng(), B = b.getLatLng();
+            showResult('⏳ 計算 <b>' + a._label + '</b> → <b>' + b._label + '</b> 路線中…');
+            var url = 'https://router.project-osrm.org/route/v1/driving/' + A.lng + ',' + A.lat + ';' + B.lng + ',' + B.lat + '?overview=full&geometries=geojson';
+            fetch(url).then(function (r) { return r.json(); }).then(function (d) {
+                if (d.code !== 'Ok' || !d.routes.length) { showResult('⚠️ 查無路線，請換兩點再試。'); return; }
+                var rt = d.routes[0];
+                var coords = rt.geometry.coordinates.map(function (c) { return [c[1], c[0]]; });
+                if (routeLine) map.removeLayer(routeLine);
+                routeLine = L.polyline(coords, { color: '#1d4ed8', weight: 5, opacity: .85 }).addTo(map);
+                map.fitBounds(routeLine.getBounds(), { padding: [50, 50] });
+                var min = Math.round(rt.duration / 60), km = (rt.distance / 1000).toFixed(1);
+                showResult('🚗 <b>' + a._label + '</b> → <b>' + b._label + '</b>：約 <b>' + min + ' 分</b>・' + km + ' km　<span style="color:#94a3b8">（自駕概估）</span>');
+            }).catch(function () { showResult('⚠️ 連線失敗，請稍後再試。'); });
+        }
+    }
+
+    var clearBtn = document.getElementById('routeClear');
+    if (clearBtn) clearBtn.addEventListener('click', clearRoute);
 })();
 </script>
 
