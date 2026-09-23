@@ -253,6 +253,25 @@ svg.i { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-widt
 .seg { display: flex; gap: 6px; flex-wrap: wrap; }
 .seg button { padding: 9px 15px; border-radius: 12px; background: var(--card-2); font-size: 14px; color: var(--ink-2); }
 .seg button.on { background: var(--ink); color: var(--card); }
+.sheet .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.sheet .two .field { min-width: 0; }
+.sheet textarea.input { resize: vertical; font-family: var(--sans); line-height: 1.6; }
+.addbtn.accent { background: var(--gold); color: #fff; box-shadow: var(--shadow); font-weight: 700; }
+.pend { list-style: none; margin: 8px 0 0; padding: 0; }
+.pend li { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 6px; padding: 10px 12px; border-radius: 12px; background: var(--card-2); font-size: 14px; line-height: 1.5; }
+.mini { flex: 0 0 auto; padding: 8px 14px; border-radius: 12px; background: var(--card); color: var(--gold); font-size: 13px; font-weight: 700; }
+.clash { margin-top: 14px; padding: 14px; border-radius: 16px; background: var(--card-2); font-size: 14px; }
+.clash .vs { margin: 8px 0; padding: 8px 10px; border-radius: 10px; background: var(--card); line-height: 1.5; }
+.clash .vs span { display: block; font-size: 12px; color: var(--muted); }
+.clash .seg { margin-top: 8px; }
+.pendcard { margin-top: 4px; margin-bottom: 14px; background: var(--gold-soft); }
+.pendcard .pend li { background: var(--card); }
+.toast { position: fixed; z-index: 950; left: 50%; top: calc(env(safe-area-inset-top) + 12px); transform: translate(-50%, -16px); width: min(calc(100% - var(--gutter) * 2), 420px);
+    display: flex; align-items: center; gap: 12px; padding: 13px 14px 13px 18px; border-radius: 16px; background: var(--ink); color: var(--card); box-shadow: var(--shadow-lg);
+    font-size: 14px; line-height: 1.5; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; }
+.toast.on { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+.toast span { flex: 1; }
+.toast button { flex: 0 0 auto; padding: 8px 14px; border-radius: 12px; background: var(--gold-soft); color: var(--ink); font-weight: 700; font-size: 13px; }
 .primary { width: 100%; margin-top: 20px; padding: 15px; border-radius: 16px; background: var(--ink); color: var(--card); font-family: var(--serif); font-size: 16px; letter-spacing: .04em; }
 .ghost { width: 100%; margin-top: 10px; padding: 13px; border-radius: 16px; background: var(--card-2); color: var(--warn); font-size: 14px; }
 
@@ -587,6 +606,7 @@ svg.i { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-widt
             <button class="round-btn" data-open="settings" aria-label="設定"><svg class="i"><use href="#i-gear"/></svg></button>
         </div>
         <div class="strip" data-strip></div>
+        <div class="card sec pendcard" id="planPend" hidden></div>
         <div class="card sec theme" data-theme style="margin-top:4px"></div>
         <div class="stats" data-stats></div>
         <p class="stats-note">交通花費取自「包車版」方案估價（全組合計）</p>
@@ -1136,7 +1156,7 @@ var S = {
     rate: load('rate', 0.023),
     members: load('members', [{ id: 'mA', name: '旅伴 A', n: 1, dep: 0 }, { id: 'mB', name: '旅伴 B', n: 1, dep: 0 }, { id: 'mC', name: '旅伴 C', n: 1, dep: 0 }]),
     expenses: load('expenses', []), saved: load('saved', []),
-    trips: load('trips', []), formUrl: load('formUrl', '')
+    plan: load('plan', []), me: load('me', '')
 };
 
 function $(s, r) { return (r || document).querySelector(s); }
@@ -1147,9 +1167,10 @@ function icon(id) { return '<svg class="i"><use href="#i-' + id + '"/></svg>'; }
 // ======== 雲端同步（Google 試算表，經 Apps Script） ========
 // 記帳、成員、匯率共用一份；航班、行李、收藏仍只存在這台裝置
 var SYNC_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbyPTFw2ES2ziAaysfIme1S73CG9huycRcAr2lOe-9CkISEvG7dVxiMCAkCpOiR4aRSn/exec';   // 部署後的「…/exec」網址
-var SYNC = { url: load('syncUrl', SYNC_URL_DEFAULT), key: load('syncKey', 'jeju2027'), outbox: load('outbox', []), at: load('syncAt', 0), busy: false, err: '' };
+var SYNC = { url: load('syncUrl', SYNC_URL_DEFAULT), key: load('syncKey', 'jeju2027'), outbox: load('outbox', []), at: load('syncAt', 0), busy: false, err: '',
+    planPend: load('planPend', []), planSeen: load('planSeen', null), mine: {}, notices: load('notices', []) };
 function syncOn() { return !!SYNC.url; }
-function listOf(t) { return t === 'expenses' ? S.expenses : t === 'members' ? S.members : null; }
+function listOf(t) { return t === 'expenses' ? S.expenses : t === 'members' ? S.members : t === 'plan' ? S.plan : null; }
 function applyOp(o) {
     if (o.table === 'settings') { if (o.row.id === '匯率' && +o.row.value > 0) S.rate = +o.row.value; return; }
     var list = listOf(o.table), i;
@@ -1168,10 +1189,9 @@ function applyRemote(d) {
     });
     (d.settings || []).forEach(function (r) {
         if (r.id === '匯率' && +r.value > 0) S.rate = +r.value;
-        if (r.id === '行程表單') S.formUrl = /^https:\/\//.test(r.value) ? String(r.value) : '';
     });
-    S.trips = (d.trips || []).filter(function (t) { return t.day >= 1 && t.day <= DAYS.length && t.title; });
-    save('trips', S.trips); save('formUrl', S.formUrl);
+    S.plan = (d.plan || []).filter(function (r) { return r.id; }).map(function (r) { r.id = String(r.id); return r; });
+    save('plan', S.plan);
     SYNC.outbox.forEach(applyOp);   // 還沒送出的操作疊在最新資料上
     save('expenses', S.expenses); save('members', S.members); save('rate', S.rate);
     SYNC.at = Date.now(); save('syncAt', SYNC.at);
@@ -1181,6 +1201,7 @@ function sheetRow(o) {
     if (o.op === 'delete') return { id: r.id };
     if (o.table === 'expenses') return { id: r.id, day: r.day, cat: r.cat, note: r.note, amt: r.amt, cur: r.cur, payer: r.payer, payerName: memberName(r.payer || 'pool') };
     if (o.table === 'members') return { id: r.id, name: r.name, n: r.n, dep: r.dep };
+    if (o.table === 'plan') { var c = Object.assign({}, r); delete c._draft; return c; }
     return r;
 }
 function queue(table, op, row) {
@@ -1189,9 +1210,15 @@ function queue(table, op, row) {
     save('outbox', SYNC.outbox); syncUi(); flush();
 }
 function syncDone(d) {
-    var wasRate = S.rate, wasTrips = JSON.stringify(S.trips) + S.formUrl;
+    var wasRate = S.rate, wasPlan = JSON.stringify(S.plan);
     applyRemote(d); SYNC.err = ''; syncUi();
-    if (JSON.stringify(S.trips) + S.formUrl !== wasTrips) { renderDay(); userMarkers(); }
+    notifyPlan(d.plan || []);
+    if (JSON.stringify(S.plan) !== wasPlan) {
+        var open = $$('.stop.open').map(function (e) { return e.id; }), y = window.scrollY;
+        renderDay(); userMarkers();
+        open.forEach(function (id) { var e = document.getElementById(id); if (e) e.classList.add('open'); });
+        window.scrollTo(0, y);
+    }
     var a = document.activeElement;
     if (S.view === 'wallet' && !$('#sheet.on') && !(a && a.closest && a.closest('#v-wallet') && a.tagName === 'INPUT')) renderWallet();
     else if (S.rate !== wasRate) renderDay();
@@ -1214,12 +1241,21 @@ function flush() {
     }
     var o = SYNC.outbox[0];
     // text/plain 不會觸發 CORS 預檢，Apps Script 才收得到
-    fetch(SYNC.url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ key: SYNC.key, table: o.table, op: o.op, row: sheetRow(o) }) })
+    fetch(SYNC.url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ key: SYNC.key, table: o.table, op: o.op, row: sheetRow(o), base: o.base, by: o.by }) })
         .then(function (r) { return r.json(); })
         .then(function (d) {
             SYNC.busy = false;
+            if (!d.ok && d.conflict) {
+                SYNC.outbox.shift(); save('outbox', SYNC.outbox);
+                SYNC.planPend.push({ row: o.row, base: o.base, label: o.label });
+                save('planPend', SYNC.planPend);
+                toast('「' + (o.row.title || '行程') + '」剛被別人改過，你的修改留在這台手機，請重新確認後再上版');
+                if (SYNC.outbox.length) flush(); else syncDone(d);
+                return;
+            }
             if (!d.ok) throw new Error(d.error);
             SYNC.outbox.shift(); save('outbox', SYNC.outbox);
+            if (o.table === 'plan' && !SYNC.outbox.some(function (x) { return x.table === 'plan'; })) toast('已上版，大家的 app 會收到通知');
             if (SYNC.outbox.length) flush(); else syncDone(d);
         })
         .catch(syncFail);
@@ -1290,44 +1326,313 @@ DAYS.forEach(function (d) {
         } else if (/住宿/.test(mt[0])) d.stay = mt[1];
     });
 });
-// ======== 旅伴用表單新增的行程 ========
-var TRIP_KIND = { '早餐': ['美食', '早餐'], '午餐': ['美食', '午餐'], '晚餐': ['美食', '晚餐'], '注意事項': ['注意', ''], '景點': ['景點', ''], '購物': ['購物', ''], '住宿': ['住宿', ''] };
+// ======== 行程修改：原本行程＋大家的修改／新增 ========
+// 共用的修改存在試算表「行程修改」（S.plan）；自己還沒上版的草稿只存在這台手機（SYNC.planPend）
+// id：「b:天-序」＝改原本的行程（空白欄＝沿用原本）；「n:…」＝新增的行程
+var TRIP_KIND = { '早餐': ['美食', '早餐'], '午餐': ['美食', '午餐'], '晚餐': ['美食', '晚餐'], '注意事項': ['注意', ''], '景點': ['景點', ''], '購物': ['購物', ''], '住宿': ['住宿', ''], '其他': ['', ''] };
+var KIND_OF = { '美食': '午餐', '景點': '景點', '購物': '購物', '住宿': '住宿', '注意': '注意事項' };
 function safeUrl(u) { return /^https?:\/\//i.test(u || '') ? u : ''; }
-function userRow(t) {
-    var k = TRIP_KIND[t.kind] || ['', ''];
-    return { id: 'u' + t.id, user: t, day: t.day, t0: t.start || '--:--', t1: t.end, name: t.title, kind: k[0], meal: k[1], place: t.place };
+function textHtml(t) { return esc(t).replace(/\n/g, '<br>'); }
+function htmlText(h) { var d = document.createElement('div'); d.innerHTML = String(h || '').replace(/<br\s*\/?>/gi, '\n'); return (d.textContent || '').trim(); }
+// 共用資料＋自己的草稿 → 每個 id 的最新狀態
+function planMap() {
+    var m = {};
+    (S.plan || []).forEach(function (r) { m[r.id] = r; });
+    SYNC.planPend.forEach(function (p) { m[p.row.id] = Object.assign({}, m[p.row.id] || {}, p.row, { _draft: true }); });
+    return m;
 }
-// 依開始時間插進當天行程；原行程順序不動
+function legFrom(o) {
+    var mode = { '公車': 'bus', '步行': 'walk', '計程車': 'taxi', '包車': 'taxi' }[o.mode];
+    return mode ? { mode: mode, mins: +o.mins || 0, km: '', text: (o.mode === '包車' ? '包車・' : '') + (o.modeNote || '') } : null;
+}
+// 原本的行程套上修改；隱藏的回傳 null
+function effBase(r, pm) {
+    var o = pm['b:' + r.id];
+    if (!o) return r;
+    if (o.status === '隱藏') return null;
+    var changed = ['day', 'start', 'end', 'title', 'kind', 'place', 'desc', 'placeNote', 'mode'].some(function (k) { return o[k] !== undefined && o[k] !== ''; });
+    var e = Object.assign({}, r, { _ov: o, _draft: !!o._draft, _edited: changed });
+    if (o.day) e.day = +o.day;
+    if (o.start) e.t0 = o.start;
+    if (o.end) e.t1 = o.end;
+    if (o.start || o.end) e.time = e.t0 + (e.t1 ? ' - ' + e.t1 : '');
+    if (o.title) e.name = o.title;
+    if (o.kind) { var k = TRIP_KIND[o.kind] || ['', '']; e.kind = k[0]; e.meal = k[1]; }
+    if (o.place) e.place = o.place;
+    if (o.desc) e.desc = textHtml(o.desc);
+    if (o.placeNote) e.placeNote = '<br>' + textHtml(o.placeNote);
+    if (o.mode) e._leg = o.mode === '無' ? 'none' : legFrom(o);
+    return e;
+}
+function newRow(t) {
+    var k = TRIP_KIND[t.kind] || ['', ''];
+    return { id: 'p' + t.id.slice(2), pid: t.id, user: t, day: +t.day, t0: t.start || '', t1: t.end || '', name: t.title, kind: k[0], meal: k[1], place: t.place, _draft: !!t._draft };
+}
+function sortKey(r) { return /^\d{1,2}:\d{2}/.test(r.t0 || '') ? ('0' + r.t0).slice(-5) : '99:99'; }
+// 某一天的行程（依開始時間排序；時間相同維持原順序）
 function dayRows(d) {
-    var out = d.rows.slice();
-    S.trips.filter(function (t) { return t.day === d.n; }).map(userRow).forEach(function (r) {
-        var k = out.length;
-        while (k > 0 && out[k - 1].t0 > r.t0) k--;
-        out.splice(k, 0, r);
+    var pm = planMap(), out = [];
+    DAYS.forEach(function (dd) { dd.rows.forEach(function (r) { var e = effBase(r, pm); if (e && e.day === d.n) out.push(e); }); });
+    Object.keys(pm).forEach(function (id) {
+        var t = pm[id];
+        if (id.indexOf('n:') === 0 && t.status !== '隱藏' && +t.day === d.n && t.title) out.push(newRow(t));
     });
+    return out.map(function (r, i) { return [sortKey(r), i, r]; }).sort(function (a, b) { return a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : a[1] - b[1]; }).map(function (x) { return x[2]; });
+}
+function hiddenRows(d) {
+    var pm = planMap(), out = [];
+    d.rows.forEach(function (r) { var o = pm['b:' + r.id]; if (o && o.status === '隱藏') out.push({ id: 'b:' + r.id, name: o.title || r.name, t0: o.start || r.t0 }); });
+    Object.keys(pm).forEach(function (id) { var t = pm[id]; if (id.indexOf('n:') === 0 && t.status === '隱藏' && +t.day === d.n) out.push({ id: id, name: t.title, t0: t.start }); });
     return out;
 }
-function userLeg(t) {
-    var mode = { '公車': 'bus', '步行': 'walk' }[t.mode] || (t.mode ? 'taxi' : '');
-    return mode ? { mode: mode, mins: t.mins || 0, km: '', text: (t.mode === '包車' ? '包車・' : '') + (t.modeNote || '') } : null;
+// 所有天的行程（找某個 id 在哪一天用）
+function findRow(domId) {
+    for (var n = 1; n <= DAYS.length; n++) { var rs = dayRows(DAYS[n - 1]); for (var i = 0; i < rs.length; i++) if (rs[i].id === domId) return rs[i]; }
+    return null;
 }
+function draftTag(r) { return r._draft ? '<span class="tag warn">未上版</span>' : r._edited ? '<span class="tag">已修改</span>' : ''; }
+function editBtn(r) { return syncOn() ? '<button data-pedit="' + r.id + '">✏️ 編輯</button>' : ''; }
 function userStopHtml(r) {
-    var t = r.user, q = encodeURIComponent(t.place), img = safeUrl(t.img), link = safeUrl(t.link);
+    var t = r.user, q = encodeURIComponent(t.place || '');
     return '<div class="stop" id="stop-' + r.id + '">' +
-        '<button class="stop-h" data-stop="' + r.id + '"><span class="tchip">' + esc(r.t0) + '</span>' +
-        '<span>' + tagHtml(r.meal || r.kind) + '<span class="tag">旅伴新增・' + esc(t.by) + '</span><span class="nm" style="display:block">' + esc(r.name) + '</span></span>' +
+        '<button class="stop-h" data-stop="' + r.id + '"><span class="tchip">' + esc(r.t0 || '—') + '</span>' +
+        '<span>' + tagHtml(r.meal || r.kind) + '<span class="tag">旅伴新增' + (t.updatedBy ? '・' + esc(t.updatedBy) : '') + '</span>' + draftTag(r) + '<span class="nm" style="display:block">' + esc(r.name) + '</span></span>' +
         '<svg class="i chev"><use href="#i-right"/></svg></button>' +
         '<div class="stop-b">' +
-        (img ? '<img class="ph" src="' + esc(img) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="' + imgFail + '">' + (t.cap ? '<p class="cap">' + esc(t.cap) + '</p>' : '') : '') +
-        '<div class="lbl">簡介／備註　<span style="font-family:var(--latin);color:var(--muted)">' + esc(r.t0 + (r.t1 ? ' - ' + r.t1 : '')) + '</span></div>' +
-        '<div class="desc" style="padding-top:0">' + (t.desc ? esc(t.desc).replace(/\n/g, '<br>') : '—') + '</div>' +
-        '<div class="place"><strong>' + esc(t.place) + '</strong>' + esc(t.placeNote) +
+        '<div class="lbl">簡介／備註　<span style="font-family:var(--latin);color:var(--muted)">' + esc((r.t0 || '') + (r.t1 ? ' - ' + r.t1 : '')) + '</span></div>' +
+        '<div class="desc" style="padding-top:0">' + (t.desc ? textHtml(t.desc) : '—') + '</div>' +
+        '<div class="place"><strong>' + esc(t.place || '') + '</strong>' + (t.placeNote ? '<br>' + textHtml(t.placeNote) : '') +
         (t.geo && t.geo !== '✓' ? '<br><span style="color:var(--warn)">地圖上找不到這個地點，請改用下方連結導航</span>' : '') + '</div>' +
         '<div class="btns">' + (t.lat ? '<button class="dark" data-ufocus="' + r.id + '">' + icon('map') + '在地圖上看</button>' : '') +
-        '<a href="https://www.google.com/maps/search/?api=1&query=' + q + '" target="_blank" rel="noopener">' + icon('pin') + 'Google 地圖</a>' +
-        '<a href="https://map.naver.com/p/search/' + q + '" target="_blank" rel="noopener">' + icon('pin') + 'Naver 地圖</a>' +
-        (link ? '<a href="' + esc(link) + '" target="_blank" rel="noopener">' + icon('ext') + '參考連結</a>' : '') +
-        '</div></div></div>';
+        (t.place ? '<a href="https://www.google.com/maps/search/?api=1&query=' + q + '" target="_blank" rel="noopener">' + icon('pin') + 'Google 地圖</a>' +
+        '<a href="https://map.naver.com/p/search/' + q + '" target="_blank" rel="noopener">' + icon('pin') + 'Naver 地圖</a>' : '') +
+        editBtn(r) + '</div></div></div>';
+}
+
+// ---- 草稿（只存在這台手機）----
+function savePend() { save('planPend', SYNC.planPend); }
+function addPend(row, label) {
+    var i = SYNC.planPend.map(function (p) { return p.row.id; }).indexOf(row.id), remote = (S.plan || []).filter(function (r) { return r.id === row.id; })[0];
+    var base = i >= 0 ? SYNC.planPend[i].base : remote ? +remote.updatedAt || 0 : 0;
+    var merged = Object.assign({}, i >= 0 ? SYNC.planPend[i].row : {}, row);
+    if (i >= 0) SYNC.planPend.splice(i, 1);
+    // 還沒上版過的新行程又被隱藏 → 草稿直接丟掉就好
+    if (!(row.id.indexOf('n:') === 0 && row.status === '隱藏' && !remote)) SYNC.planPend.push({ row: merged, base: base, label: label });
+    savePend(); renderDay(); userMarkers();
+}
+function renderPend() {
+    var el = $('#planPend'); if (!el) return;
+    var n = SYNC.planPend.length;
+    el.hidden = !n;
+    if (!n) return;
+    el.innerHTML = '<div class="card-h"><svg class="i"><use href="#i-cal"/></svg><h3>還沒上版的修改（' + n + '）</h3></div>' +
+        '<p class="note" style="margin-top:0">只存在這台手機，旅伴看不到。按「上版並通知大家」才會更新到大家的 app。</p>' +
+        '<ul class="pend">' + SYNC.planPend.map(function (p) { return '<li>' + esc(p.label) + '</li>'; }).join('') + '</ul>' +
+        '<div class="row-btns" style="margin:12px 0 0"><button class="addbtn" data-pdiscard style="flex:0 0 auto;padding:13px 16px">放棄</button>' +
+        '<button class="addbtn accent" data-ppub>上版並通知大家</button></div>';
+}
+function discardPlan() {
+    if (!confirm('放棄這 ' + SYNC.planPend.length + ' 項還沒上版的修改？')) return;
+    SYNC.planPend = []; savePend(); renderDay(); userMarkers();
+}
+// ---- 編輯／新增 ----
+var PLAN_KINDS = ['景點', '早餐', '午餐', '晚餐', '購物', '住宿', '注意事項', '其他'];
+var PLAN_MODES = ['無', '計程車', '公車', '步行', '包車'];
+function baseForm(r) {
+    var g = legOf(r);
+    return { day: r.day, start: r.t0 || '', end: r.t1 || '', kind: r.meal || KIND_OF[r.kind] || '其他', title: r.name, place: r.place || '',
+        desc: htmlText(r.desc), placeNote: htmlText(r.placeNote), mode: g ? MODE_NAME[g.mode] : '無', mins: g ? g.mins : '', modeNote: g ? g.text : '' };
+}
+function segHtml(k, opts, cur) {
+    return '<div class="seg" data-pseg="' + k + '">' + opts.map(function (o) { return '<button type="button" data-v="' + esc(o) + '"' + (String(o) === String(cur) ? ' class="on"' : '') + '>' + esc(k === 'day' ? 'D' + o : o) + '</button>'; }).join('') + '</div>';
+}
+function openPlanEdit(domId, day) {
+    var r = domId ? findRow(domId) : null, isNew = !r, isBase = r && !r.user;
+    var orig = isBase ? baseForm(rowById(r.id)) : null;
+    var f = isNew ? { day: day || S.day, start: '', end: '', kind: '景點', title: '', place: '', desc: '', placeNote: '', mode: '無', mins: '', modeNote: '' }
+        : isBase ? baseForm(r) : { day: r.day, start: r.t0, end: r.t1, kind: r.user.kind || '其他', title: r.name, place: r.user.place || '', desc: r.user.desc || '', placeNote: r.user.placeNote || '', mode: r.user.mode || '無', mins: r.user.mins || '', modeNote: r.user.modeNote || '' };
+    if (isBase && r._ov && r._ov.mode) { f.mode = r._ov.mode; f.mins = r._ov.mins || ''; f.modeNote = r._ov.modeNote || ''; }
+    openSheet(
+        '<div class="when" style="margin-top:6px">' + (isNew ? 'New · 新增行程' : 'Edit · 編輯行程') + '</div><h2>' + (isNew ? '新增行程' : esc(r.name)) + '</h2>' +
+        '<div class="field"><span>哪一天</span>' + segHtml('day', DAYS.map(function (d) { return d.n; }), f.day) + '</div>' +
+        '<div class="two"><label class="field"><span>開始時間</span><input class="input" id="pStart" type="time" value="' + esc(f.start) + '"></label>' +
+        '<label class="field"><span>結束時間</span><input class="input" id="pEnd" type="time" value="' + esc(f.end) + '"></label></div>' +
+        '<div class="field"><span>類型</span>' + segHtml('kind', PLAN_KINDS, f.kind) + '</div>' +
+        '<label class="field"><span>標題</span><input class="input" id="pTitle" type="text" value="' + esc(f.title) + '" placeholder="例：城山日出峰看海"></label>' +
+        '<label class="field"><span>地點</span><input class="input" id="pPlace" type="text" value="' + esc(f.place) + '" placeholder="地名或韓文店名，會自動定位到地圖"></label>' +
+        '<label class="field"><span>簡介／備註</span><textarea class="input" id="pDesc" rows="3">' + esc(f.desc) + '</textarea></label>' +
+        '<label class="field"><span>地點備註</span><input class="input" id="pNote" type="text" value="' + esc(f.placeNote) + '" placeholder="營業時間、門票、價位"></label>' +
+        '<div class="field"><span>怎麼過去</span>' + segHtml('mode', PLAN_MODES, f.mode) + '</div>' +
+        '<div class="two"><label class="field"><span>交通時間（分）</span><input class="input" id="pMins" type="number" inputmode="numeric" min="0" value="' + esc(f.mins) + '"></label>' +
+        '<label class="field"><span>交通說明</span><input class="input" id="pModeNote" type="text" value="' + esc(f.modeNote) + '" placeholder="例：600 利木津"></label></div>' +
+        '<p class="note">儲存後先存在這台手機，確認沒問題再按「上版並通知大家」。</p>' +
+        '<button class="primary" id="pSave">儲存</button>' +
+        (isNew ? '' : '<button class="ghost" id="pHide">隱藏這個行程</button>')
+    );
+    var pick = { day: f.day, kind: f.kind, mode: f.mode };
+    $$('#sheet [data-pseg]').forEach(function (seg) {
+        seg.addEventListener('click', function (e) {
+            var b = e.target.closest('button'); if (!b) return;
+            $$('button', seg).forEach(function (x) { x.classList.toggle('on', x === b); });
+            pick[seg.getAttribute('data-pseg')] = b.getAttribute('data-v');
+        });
+    });
+    $('#pSave').addEventListener('click', function () {
+        var v = { day: +pick.day, start: $('#pStart').value, end: $('#pEnd').value, kind: pick.kind, title: $('#pTitle').value.trim(), place: $('#pPlace').value.trim(),
+            desc: $('#pDesc').value.trim(), placeNote: $('#pNote').value.trim(), mode: pick.mode, mins: $('#pMins').value === '' ? '' : +$('#pMins').value, modeNote: $('#pModeNote').value.trim() };
+        if (!v.title) { $('#pTitle').focus(); $('#pTitle').style.boxShadow = '0 0 0 2px var(--warn)'; return; }
+        if (!v.start) { $('#pStart').focus(); $('#pStart').style.boxShadow = '0 0 0 2px var(--warn)'; return; }
+        var row, label, dd = 'Day ' + v.day + ' ' + v.start;
+        if (isNew) {
+            row = Object.assign({ id: 'n:' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), status: '有效' }, v);
+            label = '新增「' + v.title + '」（' + dd + '）';
+        } else if (isBase) {
+            // 只存跟原本不一樣的欄位；跟原本一樣的留空＝沿用原本
+            row = { id: 'b:' + r.id, status: '有效' }; var ch = [];
+            Object.keys(v).forEach(function (k) {
+                var same = String(v[k]) === String(orig[k]);
+                if (k === 'mins' || k === 'modeNote') same = same && v.mode === orig.mode;
+                row[k] = same && !(k === 'mode' && (v.mins !== orig.mins || v.modeNote !== orig.modeNote)) ? '' : v[k];
+                if (row[k] !== '') ch.push(k);
+            });
+            if (row.mode !== '' || row.mins !== '' || row.modeNote !== '') { row.mode = v.mode; row.mins = v.mins; row.modeNote = v.modeNote; }   // 交通三欄一起存
+            var what = ch.indexOf('start') >= 0 || ch.indexOf('end') >= 0 ? '時間改為 ' + v.start + (v.end ? '–' + v.end : '') : ch.indexOf('day') >= 0 ? '移到 Day ' + v.day : '內容';
+            label = '修改「' + v.title + '」：' + (ch.length ? what : '還原成原本');
+        } else {
+            row = Object.assign({ id: r.pid, status: '有效' }, v);
+            label = '修改「' + v.title + '」（' + dd + '）';
+        }
+        closeSheet(); addPend(row, label);
+        if (S.view !== 'plan' || S.day !== v.day) { S.day = v.day; renderDay(); go('plan'); }
+        setTimeout(function () { openStop(isNew ? 'p' + row.id.slice(2) : r.id, true); }, 100);
+    });
+    if (!isNew) $('#pHide').addEventListener('click', function () {
+        if (!confirm('隱藏「' + r.name + '」？上版後大家都看不到，之後可以在「已隱藏」裡恢復。')) return;
+        closeSheet(); addPend({ id: isBase ? 'b:' + r.id : r.pid, status: '隱藏' }, '隱藏「' + r.name + '」');
+    });
+}
+function openHidden(n) {
+    var h = hiddenRows(DAYS[n - 1]);
+    openSheet('<div class="when" style="margin-top:6px">Day ' + n + '</div><h2>已隱藏的行程</h2>' +
+        '<ul class="pend">' + h.map(function (x) { return '<li><span>' + esc((x.t0 || '') + ' ' + x.name) + '</span><button class="mini" data-prestore="' + esc(x.id) + '">恢復</button></li>'; }).join('') + '</ul>');
+}
+function restorePlan(id) {
+    var o = planMap()[id] || {}, name = o.title || (id.indexOf('b:') === 0 ? rowById(id.slice(2)).name : '行程');
+    addPend({ id: id, status: '有效' }, '恢復「' + name + '」');
+}
+// ---- 你是哪位（不用登入，只問一次）----
+function askWho(then) {
+    openSheet('<div class="when" style="margin-top:6px">Who · 你是哪位</div><h2>你是哪一位？</h2>' +
+        '<p class="note" style="margin-top:0">上版時會通知大家「誰改了什麼」。只會問這一次，不用登入，之後可以在設定裡改。</p>' +
+        '<div class="seg" id="whoSeg" style="flex-wrap:wrap">' + S.members.map(function (m) { return '<button type="button" data-v="' + esc(m.name) + '">' + esc(m.name) + '</button>'; }).join('') + '</div>' +
+        '<label class="field"><span>或輸入名字</span><input class="input" id="whoName" type="text" maxlength="20"></label>' +
+        '<button class="primary" id="whoOk">確定</button>');
+    $('#whoSeg').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) $('#whoName').value = b.getAttribute('data-v'); });
+    $('#whoOk').addEventListener('click', function () {
+        var v = $('#whoName').value.trim(); if (!v) { $('#whoName').focus(); return; }
+        S.me = v; save('me', v); closeSheet(); if (then) then();
+    });
+}
+// ---- 上版：先確認有沒有人改過 → 上傳 → 通知 ----
+function publishPlan() {
+    if (!SYNC.planPend.length) return;
+    if (!S.me) return askWho(publishPlan);
+    toast('正在確認有沒有人改過…');
+    fetch(SYNC.url + (SYNC.url.indexOf('?') < 0 ? '?' : '&') + 'key=' + encodeURIComponent(SYNC.key) + '&t=' + Date.now())
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+            if (!d.ok) throw new Error(d.error);
+            syncDone(d);
+            var remote = {}; (d.plan || []).forEach(function (r) { remote[String(r.id)] = r; });
+            var clash = SYNC.planPend.filter(function (p) { var r = remote[p.row.id]; return (r ? +r.updatedAt || 0 : 0) !== (+p.base || 0); });
+            if (clash.length) openConflict(clash, remote); else sendPlan();
+        })
+        .catch(function () { toast('連不上共用帳本，修改還留在這台手機，有網路時再按上版'); });
+}
+function sendPlan() {
+    SYNC.planPend.forEach(function (p) { SYNC.outbox.push({ table: 'plan', op: 'upsert', row: p.row, base: +p.base || 0, by: S.me, label: p.label }); SYNC.mine[p.row.id] = 1; });
+    SYNC.planPend = []; savePend(); save('outbox', SYNC.outbox);
+    renderDay(); syncUi(); toast('上版中…'); flush();
+}
+function planSummary(r) {
+    if (!r) return '（沒有這筆）';
+    if (r.status === '隱藏') return '已隱藏';
+    return [r.day ? 'Day ' + r.day : '', r.start ? r.start + (r.end ? '–' + r.end : '') : '', r.title, r.place].filter(Boolean).join('・') || '（沿用原本內容）';
+}
+function openConflict(clash, remote) {
+    openSheet('<div class="when" style="margin-top:6px">Check · 上版前確認</div><h2>有人改過這些行程</h2>' +
+        '<p class="note" style="margin-top:0">在你修改之後，旅伴也改了同一個行程。每一項請選要保留哪個版本。</p>' +
+        clash.map(function (p, i) {
+            var r = remote[p.row.id], mine = Object.assign({}, r || {}, p.row);
+            return '<div class="clash"><b>' + esc(p.label) + '</b>' +
+                '<div class="vs"><span>' + esc((r && r.updatedBy) || '旅伴') + ' 的版本</span>' + esc(planSummary(r)) + '</div>' +
+                '<div class="vs"><span>你的版本</span>' + esc(planSummary(mine)) + '</div>' +
+                '<div class="seg" data-clash="' + i + '"><button type="button" data-v="mine" class="on">用我的</button><button type="button" data-v="theirs">保留對方的</button></div></div>';
+        }).join('') + '<button class="primary" id="clashOk">確定並上版</button>');
+    var pick = clash.map(function () { return 'mine'; });
+    $$('#sheet [data-clash]').forEach(function (seg) {
+        seg.addEventListener('click', function (e) {
+            var b = e.target.closest('button'); if (!b) return;
+            $$('button', seg).forEach(function (x) { x.classList.toggle('on', x === b); });
+            pick[+seg.getAttribute('data-clash')] = b.getAttribute('data-v');
+        });
+    });
+    $('#clashOk').addEventListener('click', function () {
+        clash.forEach(function (p, i) {
+            var r = remote[p.row.id];
+            if (pick[i] === 'mine') p.base = r ? +r.updatedAt || 0 : 0;
+            else SYNC.planPend = SYNC.planPend.filter(function (x) { return x !== p; });
+        });
+        savePend(); closeSheet();
+        if (SYNC.planPend.length) sendPlan(); else { renderDay(); toast('已保留旅伴的版本'); }
+    });
+}
+// ---- 通知：別人上版的行程變動 ----
+function planName(r) {
+    if (r.title) return r.title;
+    var id = String(r.id);
+    if (id.indexOf('b:') === 0) { try { return rowById(id.slice(2)).name; } catch (e) {} }
+    return '行程';
+}
+function notifyPlan(rows) {
+    var seen = SYNC.planSeen, now = {}, byWho = {}, list = [];
+    rows.forEach(function (r) { now[r.id] = { u: +r.updatedAt || 0, status: r.status, start: r.start }; });
+    if (seen) rows.forEach(function (r) {
+        var p = seen[r.id], id = String(r.id);
+        if (p && p.u === (+r.updatedAt || 0)) return;
+        if (SYNC.mine[id] || (S.me && r.updatedBy === S.me)) return;
+        var name = planName(r), msg;
+        if (!p && id.indexOf('n:') === 0) msg = '新增了「' + name + '」（Day ' + r.day + (r.start ? ' ' + r.start : '') + '）';
+        else if (r.status === '隱藏' && (!p || p.status !== '隱藏')) msg = '隱藏了「' + name + '」';
+        else if (p && p.status === '隱藏' && r.status !== '隱藏') msg = '恢復了「' + name + '」';
+        else msg = '修改了「' + name + '」' + (r.start && (!p || p.start !== r.start) ? '，時間改為 ' + r.start : '');
+        var who = r.updatedBy || '旅伴';
+        (byWho[who] = byWho[who] || []).push(msg);
+        list.push({ who: who, msg: msg, goto: id.indexOf('n:') === 0 ? 'p' + id.slice(2) : id.slice(2), at: Date.now() });
+    });
+    SYNC.planSeen = now; save('planSeen', now); SYNC.mine = {};
+    if (!list.length) return;
+    SYNC.notices = list.concat(SYNC.notices).slice(0, 30); save('notices', SYNC.notices);
+    var whos = Object.keys(byWho);
+    toast('🔔 ' + whos[0] + ' ' + byWho[whos[0]][0] + (list.length > 1 ? '，還有 ' + (list.length - 1) + ' 項行程更新' : ''), '查看', openNotices);
+}
+function openNotices() {
+    openSheet('<div class="when" style="margin-top:6px">Updates · 行程更新</div><h2>最近的行程更新</h2>' +
+        (SYNC.notices.length ? '<ul class="pend">' + SYNC.notices.map(function (n) {
+            var t = new Date(n.at);
+            return '<li><span><b>' + esc(n.who) + '</b> ' + esc(n.msg) + '<small style="display:block;color:var(--muted)">' + (t.getMonth() + 1) + '/' + t.getDate() + ' ' + t.getHours() + ':' + ('0' + t.getMinutes()).slice(-2) + '</small></span>' +
+                '<button class="mini" data-goto="' + esc(n.goto) + '">看</button></li>';
+        }).join('') + '</ul>' : '<p class="empty">還沒有更新</p>'));
+}
+// ---- 小提示 ----
+var toastTimer;
+function toast(msg, act, fn) {
+    var el = $('#toast');
+    if (!el) { el = document.createElement('div'); el.id = 'toast'; el.className = 'toast'; document.body.appendChild(el); }
+    el.innerHTML = '<span>' + esc(msg) + '</span>' + (act ? '<button type="button">' + esc(act) + '</button>' : '');
+    if (act) el.querySelector('button').onclick = function () { el.classList.remove('on'); fn(); };
+    el.classList.add('on'); clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.classList.remove('on'); }, act ? 7000 : 3500);
 }
 function rowById(id) { var p = id.split('-'); return DAYS[p[0] - 1].rows[+p[1]]; }
 function tagHtml(k) { return k ? '<span class="tag ' + ({ '美食': 'food', '注意': 'warn', '景點': 'spot' }[k] || '') + '">' + k + '</span>' : ''; }
@@ -1366,14 +1671,14 @@ function rowLi(r, thumb) {
     var sub = [];
     if (r.place) sub.push(esc(r.place.replace(/\s*\(.*?\)\s*$/, '').replace(/\s*（.*$/, '')));
     return '<li><button data-' + (thumb ? 'row' : 'goto') + '="' + r.id + '">' +
-        '<span class="t">' + r.t0 + (r.t1 ? '<small>– ' + r.t1 + '</small>' : '') + '</span>' +
-        '<span><span class="nm">' + esc(r.name) + '</span><div class="pl">' + tagHtml(r.meal || r.kind) + (r.user ? '<span class="tag">旅伴新增</span>' : '') + sub.join('<span class="dot">·</span>') + '</div></span>' +
+        '<span class="t">' + esc(r.t0 || '—') + (r.t1 ? '<small>– ' + esc(r.t1) + '</small>' : '') + '</span>' +
+        '<span><span class="nm">' + esc(r.name) + '</span><div class="pl">' + tagHtml(r.meal || r.kind) + (r.user ? '<span class="tag">旅伴新增</span>' : '') + (r._draft ? '<span class="tag warn">未上版</span>' : '') + sub.join('<span class="dot">·</span>') + '</div></span>' +
         (thumb && r.img ? '<img class="th" src="' + esc(r.img) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="' + imgFail + '">' : '<span></span>') +
         '</button></li>';
 }
 function metaHtml(d) {
     return '<div class="card-h"><svg class="i"><use href="#i-bed"/></svg><h3>餐食與住宿</h3></div>' +
-        '<div class="meals">' + d.meals.map(function (m) { return '<div class="meal"><b>' + esc(m[0]) + '</b><span>' + esc(m[1]) + '</span></div>'; }).join('') + '</div>' +
+        '<div class="meals">' + d.meals.map(function (m) { return '<div class="meal"><b>' + esc(m[0]) + '</b><span>' + m[1] + '</span></div>'; }).join('') + '</div>' +
         (d.stay ? '<div class="stay">' + d.stay + '</div>' : '');
 }
 function renderDay() {
@@ -1415,8 +1720,8 @@ function stopHtml(r) {
     }).join('');
     var saved = S.saved.indexOf(r.id) >= 0;
     return '<div class="stop" id="stop-' + r.id + '">' +
-        '<button class="stop-h" data-stop="' + r.id + '"><span class="tchip">' + r.t0 + '</span>' +
-        '<span>' + tagHtml(r.meal || r.kind) + '<span class="nm" style="display:block">' + esc(r.name) + '</span></span>' +
+        '<button class="stop-h" data-stop="' + r.id + '"><span class="tchip">' + esc(r.t0) + '</span>' +
+        '<span>' + tagHtml(r.meal || r.kind) + draftTag(r) + '<span class="nm" style="display:block">' + esc(r.name) + '</span></span>' +
         '<svg class="i chev"><use href="#i-right"/></svg></button>' +
         '<div class="stop-b">' +
         (r.img ? '<img class="ph" src="' + esc(r.img) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="' + imgFail + '">' + (r.cap ? '<p class="cap">' + esc(r.cap) + '</p>' : '') : '') +
@@ -1424,19 +1729,21 @@ function stopHtml(r) {
         '<div class="desc" style="padding-top:0">' + r.desc + '</div>' +
         '<div class="place"><strong>' + esc(r.place) + '</strong>' + r.placeNote + '</div>' +
         '<div class="btns">' + (r.spot >= 0 ? '<button class="dark" data-focus="' + r.spot + '">' + icon('map') + '在地圖上看</button>' : '') + links +
-        '<button data-save="' + r.id + '">' + icon('mark') + (saved ? '已收藏' : '收藏') + '</button></div>' +
+        '<button data-save="' + r.id + '">' + icon('mark') + (saved ? '已收藏' : '收藏') + '</button>' + editBtn(r) + '</div>' +
         '</div></div>';
 }
 function renderFlow(d) {
     var mins = 0;
     $('[data-flow]').innerHTML = dayRows(d).map(function (r) {
-        if (r.user) { var ug = userLeg(r.user); if (ug) mins += ug.mins; return (ug ? legHtml(ug) : '') + userStopHtml(r); }
-        var i = +r.id.split('-')[1];
-        var g = legOf(r), L2 = LEG_BY[d.n + '-' + i];
+        if (r.user) { var ug = legFrom(r.user); if (ug) mins += ug.mins; return (ug ? legHtml(ug) : '') + userStopHtml(r); }
+        if (r._leg) { if (r._leg === 'none') return stopHtml(r); mins += r._leg.mins; return legHtml(r._leg) + stopHtml(r); }
+        var g = legOf(r), L2 = LEG_BY[r.id];
         if (L2 && !g) g = { mode: 'taxi', mins: Math.max(1, L2.drive), km: String(L2.km), text: L2.frm + '→' + L2.to };
         if (g) mins += g.mins;
         return (g ? (L2 ? '<button class="legbtn" data-leg="' + L2.i + '">' + legHtml(g) + legChips(L2) + '</button>' : legHtml(g)) : '') + stopHtml(r);
-    }).join('') + (S.formUrl ? '<a class="addbtn" style="width:100%;margin:14px 0 0" href="' + esc(S.formUrl) + '" target="_blank" rel="noopener">' + icon('plus') + '新增行程</a>' : '');
+    }).join('') + (syncOn() ? '<button class="addbtn accent" style="width:100%;margin:14px 0 0" data-padd="' + d.n + '">' + icon('plus') + '新增行程</button>' : '') +
+        (function (h) { return h.length ? '<button class="tl-more" style="margin-top:10px" data-phidden="' + d.n + '">已隱藏 ' + h.length + ' 個行程 ›</button>' : ''; })(hiddenRows(d));
+    renderPend();
     var krw = DAY_COST[d.n] || 0;
     $('[data-stats]').innerHTML =
         '<div><span>交通時間</span><b>' + (mins >= 60 ? Math.floor(mins / 60) + '<small>時</small>' : '') + (mins % 60) + '<small>分</small></b><em>' + d.rows.filter(legOf).length + ' 段移動</em></div>' +
@@ -1627,16 +1934,18 @@ function userMarkers() {
         Object.keys(LAYERS).forEach(function (k) { LAYERS[k] = LAYERS[k].filter(function (x) { return x !== m; }); });
     });
     USER_MARKERS = {};
-    S.trips.forEach(function (t) {
-        if (!t.lat || !t.lng) return;
-        var r = userRow(t);
-        var m = L.circleMarker([t.lat, t.lng], { radius: 8, color: '#FBFDFF', weight: 2.5, dashArray: '3 3', fillColor: DAY_COLOR[t.day] || '#978B7C', fillOpacity: 1 });
-        m._label = t.title;
-        m.addTo(MAP).bindPopup('<b>' + esc(t.title) + '</b><br>Day ' + t.day + '・' + esc(r.t0) + '<br><span style="color:var(--muted)">旅伴新增・' + esc(t.by) + '</span>' +
-            '<br><button class="pbtn" data-goto="' + r.id + '">看行程細節 ›</button>');
-        m.on('click', function () { onPick(m); });
-        (LAYERS[String(t.day)] = LAYERS[String(t.day)] || []).push(m);
-        USER_MARKERS[r.id] = m;
+    DAYS.forEach(function (d) {
+        dayRows(d).forEach(function (r) {
+            var t = r.user || (r._ov && r._ov.place ? r._ov : null);
+            if (!t || !t.lat || !t.lng) return;
+            var m = L.circleMarker([+t.lat, +t.lng], { radius: 8, color: '#FBFDFF', weight: 2.5, dashArray: '3 3', fillColor: DAY_COLOR[r.day] || '#978B7C', fillOpacity: 1 });
+            m._label = r.name;
+            m.addTo(MAP).bindPopup('<b>' + esc(r.name) + '</b><br>Day ' + r.day + '・' + esc(r.t0) + '<br><span style="color:var(--muted)">' + (r.user ? '旅伴新增' : '已修改地點') + (t.updatedBy ? '・' + esc(t.updatedBy) : '') + '</span>' +
+                '<br><button class="pbtn" data-goto="' + r.id + '">看行程細節 ›</button>');
+            m.on('click', function () { onPick(m); });
+            (LAYERS[String(r.day)] = LAYERS[String(r.day)] || []).push(m);
+            USER_MARKERS[r.id] = m;
+        });
     });
 }
 function focusUser(id) {
@@ -1970,12 +2279,15 @@ function openSettings() {
         '<label class="field"><span>匯率：₩1 = NT$</span><input class="input" id="sRate" type="number" inputmode="decimal" step="0.0001" value="' + S.rate + '"></label>' +
         '<label class="field"><span>同步網址（Apps Script …/exec）</span><input class="input" id="sUrl" type="url" placeholder="留空＝只存在這台裝置" value="' + esc(SYNC.url) + '"></label>' +
         '<label class="field"><span>同步碼</span><input class="input" id="sKey" type="text" value="' + esc(SYNC.key) + '"></label>' +
+        '<label class="field"><span>我是（上版行程時通知大家用）</span><input class="input" id="sMe" type="text" maxlength="20" value="' + esc(S.me) + '"></label>' +
+        (syncOn() ? '<button class="ghost" style="color:var(--gold)" data-pnotices>最近的行程更新</button>' : '') +
         '<p class="note">人數請到「記帳 › 成員」設定。填了同步網址，記帳、成員與匯率會和旅伴共用；航班、行李與收藏仍只存在這台裝置。</p>' +
         '<button class="primary" id="sSave">儲存設定</button>' +
         '<button class="ghost" id="sClear">清除全部記帳（' + S.expenses.length + ' 筆）</button>'
     );
     $('#sSave').addEventListener('click', function () {
         var r = parseFloat($('#sRate').value);
+        var me = $('#sMe').value.trim(); if (me !== S.me) { S.me = me; save('me', me); }
         var u = $('#sUrl').value.trim(), k = $('#sKey').value.trim() || 'jeju2027';
         if (u !== SYNC.url || k !== SYNC.key) {
             SYNC.url = u; SYNC.key = k; SYNC.err = ''; save('syncUrl', u); save('syncKey', k);
@@ -2096,6 +2408,13 @@ document.addEventListener('click', function (e) {
     if ((a = t.getAttribute('data-save'))) { e.stopPropagation(); return toggleSave(a); }
     if ((a = t.getAttribute('data-focus'))) return focusSpot(+a);
     if ((a = t.getAttribute('data-ufocus'))) return focusUser(a);
+    if ((a = t.getAttribute('data-pedit'))) return openPlanEdit(a);
+    if ((a = t.getAttribute('data-padd'))) return openPlanEdit(null, +a);
+    if ((a = t.getAttribute('data-phidden'))) return openHidden(+a);
+    if ((a = t.getAttribute('data-prestore'))) { closeSheet(); return restorePlan(a); }
+    if (t.hasAttribute('data-ppub')) return publishPlan();
+    if (t.hasAttribute('data-pdiscard')) return discardPlan();
+    if (t.hasAttribute('data-pnotices')) return openNotices();
     if ((a = t.getAttribute('data-exfocus'))) return focusEx(+a);
     if ((a = t.getAttribute('data-leg'))) return openLeg(+a);
     if ((a = t.getAttribute('data-busstop'))) return focusBusStop(a);
@@ -2104,7 +2423,7 @@ document.addEventListener('click', function (e) {
     if ((a = t.getAttribute('data-row'))) return openRow(a);
     if ((a = t.getAttribute('data-stop'))) return openStop(a);
     if ((a = t.getAttribute('data-goto'))) {
-        var gd = a.charAt(0) === 'u' ? (S.trips.filter(function (x) { return 'u' + x.id === a; })[0] || {}).day : +a.split('-')[0];
+        var gd = (findRow(a) || {}).day;
         if (gd && gd !== S.day) { S.day = gd; renderDay(); }
         go('plan'); return openStop(a, true);
     }
