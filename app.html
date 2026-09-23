@@ -1135,7 +1135,8 @@ var S = {
     day: 1, view: 'home', info: 'hotel', spotFilter: '全部',
     rate: load('rate', 0.023),
     members: load('members', [{ id: 'mA', name: '旅伴 A', n: 1, dep: 0 }, { id: 'mB', name: '旅伴 B', n: 1, dep: 0 }, { id: 'mC', name: '旅伴 C', n: 1, dep: 0 }]),
-    expenses: load('expenses', []), saved: load('saved', [])
+    expenses: load('expenses', []), saved: load('saved', []),
+    trips: load('trips', []), formUrl: load('formUrl', '')
 };
 
 function $(s, r) { return (r || document).querySelector(s); }
@@ -1145,7 +1146,7 @@ function icon(id) { return '<svg class="i"><use href="#i-' + id + '"/></svg>'; }
 
 // ======== 雲端同步（Google 試算表，經 Apps Script） ========
 // 記帳、成員、匯率共用一份；航班、行李、收藏仍只存在這台裝置
-var SYNC_URL_DEFAULT = '';   // 部署後的「…/exec」網址
+var SYNC_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbyPTFw2ES2ziAaysfIme1S73CG9huycRcAr2lOe-9CkISEvG7dVxiMCAkCpOiR4aRSn/exec';   // 部署後的「…/exec」網址
 var SYNC = { url: load('syncUrl', SYNC_URL_DEFAULT), key: load('syncKey', 'jeju2027'), outbox: load('outbox', []), at: load('syncAt', 0), busy: false, err: '' };
 function syncOn() { return !!SYNC.url; }
 function listOf(t) { return t === 'expenses' ? S.expenses : t === 'members' ? S.members : null; }
@@ -1165,7 +1166,12 @@ function applyRemote(d) {
     S.members = (d.members || []).filter(live).map(function (r) {
         return { id: String(r.id), name: String(r.name), n: Math.max(1, +r.n || 1), dep: +r.dep || 0 };
     });
-    (d.settings || []).forEach(function (r) { if (r.id === '匯率' && +r.value > 0) S.rate = +r.value; });
+    (d.settings || []).forEach(function (r) {
+        if (r.id === '匯率' && +r.value > 0) S.rate = +r.value;
+        if (r.id === '行程表單') S.formUrl = /^https:\/\//.test(r.value) ? String(r.value) : '';
+    });
+    S.trips = (d.trips || []).filter(function (t) { return t.day >= 1 && t.day <= DAYS.length && t.title; });
+    save('trips', S.trips); save('formUrl', S.formUrl);
     SYNC.outbox.forEach(applyOp);   // 還沒送出的操作疊在最新資料上
     save('expenses', S.expenses); save('members', S.members); save('rate', S.rate);
     SYNC.at = Date.now(); save('syncAt', SYNC.at);
@@ -1183,11 +1189,12 @@ function queue(table, op, row) {
     save('outbox', SYNC.outbox); syncUi(); flush();
 }
 function syncDone(d) {
-    var wasRate = S.rate;
+    var wasRate = S.rate, wasTrips = JSON.stringify(S.trips) + S.formUrl;
     applyRemote(d); SYNC.err = ''; syncUi();
+    if (JSON.stringify(S.trips) + S.formUrl !== wasTrips) { renderDay(); userMarkers(); }
     var a = document.activeElement;
     if (S.view === 'wallet' && !$('#sheet.on') && !(a && a.closest && a.closest('#v-wallet') && a.tagName === 'INPUT')) renderWallet();
-    if (S.rate !== wasRate) renderDay();
+    else if (S.rate !== wasRate) renderDay();
 }
 function syncFail(e) {
     SYNC.busy = false;
@@ -1221,6 +1228,7 @@ function syncUi() {
     var el = $('#wsync'); if (!el) return;
     if (!syncOn()) { el.textContent = '只存在這台裝置　·　到設定填入同步網址就能和旅伴共用'; return; }
     var t = SYNC.at ? new Date(SYNC.at) : null, p = SYNC.outbox.length;
+    if (!t && !SYNC.err) { el.textContent = '連線中…' + (p ? '　·　' + p + ' 筆待上傳' : ''); return; }
     el.textContent = (SYNC.err ? '⚠ ' + SYNC.err + (p ? '，' + p + ' 筆待上傳' : '') + '　·　' : p ? '上傳中 ' + p + ' 筆　·　' : '已和旅伴同步　·　') +
         (t ? '最後更新 ' + t.getHours() + ':' + ('0' + t.getMinutes()).slice(-2) : '尚未連上');
 }
@@ -1282,6 +1290,45 @@ DAYS.forEach(function (d) {
         } else if (/住宿/.test(mt[0])) d.stay = mt[1];
     });
 });
+// ======== 旅伴用表單新增的行程 ========
+var TRIP_KIND = { '早餐': ['美食', '早餐'], '午餐': ['美食', '午餐'], '晚餐': ['美食', '晚餐'], '注意事項': ['注意', ''], '景點': ['景點', ''], '購物': ['購物', ''], '住宿': ['住宿', ''] };
+function safeUrl(u) { return /^https?:\/\//i.test(u || '') ? u : ''; }
+function userRow(t) {
+    var k = TRIP_KIND[t.kind] || ['', ''];
+    return { id: 'u' + t.id, user: t, day: t.day, t0: t.start || '--:--', t1: t.end, name: t.title, kind: k[0], meal: k[1], place: t.place };
+}
+// 依開始時間插進當天行程；原行程順序不動
+function dayRows(d) {
+    var out = d.rows.slice();
+    S.trips.filter(function (t) { return t.day === d.n; }).map(userRow).forEach(function (r) {
+        var k = out.length;
+        while (k > 0 && out[k - 1].t0 > r.t0) k--;
+        out.splice(k, 0, r);
+    });
+    return out;
+}
+function userLeg(t) {
+    var mode = { '公車': 'bus', '步行': 'walk' }[t.mode] || (t.mode ? 'taxi' : '');
+    return mode ? { mode: mode, mins: t.mins || 0, km: '', text: (t.mode === '包車' ? '包車・' : '') + (t.modeNote || '') } : null;
+}
+function userStopHtml(r) {
+    var t = r.user, q = encodeURIComponent(t.place), img = safeUrl(t.img), link = safeUrl(t.link);
+    return '<div class="stop" id="stop-' + r.id + '">' +
+        '<button class="stop-h" data-stop="' + r.id + '"><span class="tchip">' + esc(r.t0) + '</span>' +
+        '<span>' + tagHtml(r.meal || r.kind) + '<span class="tag">旅伴新增・' + esc(t.by) + '</span><span class="nm" style="display:block">' + esc(r.name) + '</span></span>' +
+        '<svg class="i chev"><use href="#i-right"/></svg></button>' +
+        '<div class="stop-b">' +
+        (img ? '<img class="ph" src="' + esc(img) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="' + imgFail + '">' + (t.cap ? '<p class="cap">' + esc(t.cap) + '</p>' : '') : '') +
+        '<div class="lbl">簡介／備註　<span style="font-family:var(--latin);color:var(--muted)">' + esc(r.t0 + (r.t1 ? ' - ' + r.t1 : '')) + '</span></div>' +
+        '<div class="desc" style="padding-top:0">' + (t.desc ? esc(t.desc).replace(/\n/g, '<br>') : '—') + '</div>' +
+        '<div class="place"><strong>' + esc(t.place) + '</strong>' + esc(t.placeNote) +
+        (t.geo && t.geo !== '✓' ? '<br><span style="color:var(--warn)">地圖上找不到這個地點，請改用下方連結導航</span>' : '') + '</div>' +
+        '<div class="btns">' + (t.lat ? '<button class="dark" data-ufocus="' + r.id + '">' + icon('map') + '在地圖上看</button>' : '') +
+        '<a href="https://www.google.com/maps/search/?api=1&query=' + q + '" target="_blank" rel="noopener">' + icon('pin') + 'Google 地圖</a>' +
+        '<a href="https://map.naver.com/p/search/' + q + '" target="_blank" rel="noopener">' + icon('pin') + 'Naver 地圖</a>' +
+        (link ? '<a href="' + esc(link) + '" target="_blank" rel="noopener">' + icon('ext') + '參考連結</a>' : '') +
+        '</div></div></div>';
+}
 function rowById(id) { var p = id.split('-'); return DAYS[p[0] - 1].rows[+p[1]]; }
 function tagHtml(k) { return k ? '<span class="tag ' + ({ '美食': 'food', '注意': 'warn', '景點': 'spot' }[k] || '') + '">' + k + '</span>' : ''; }
 
@@ -1320,7 +1367,7 @@ function rowLi(r, thumb) {
     if (r.place) sub.push(esc(r.place.replace(/\s*\(.*?\)\s*$/, '').replace(/\s*（.*$/, '')));
     return '<li><button data-' + (thumb ? 'row' : 'goto') + '="' + r.id + '">' +
         '<span class="t">' + r.t0 + (r.t1 ? '<small>– ' + r.t1 + '</small>' : '') + '</span>' +
-        '<span><span class="nm">' + esc(r.name) + '</span><div class="pl">' + tagHtml(r.meal || r.kind) + sub.join('<span class="dot">·</span>') + '</div></span>' +
+        '<span><span class="nm">' + esc(r.name) + '</span><div class="pl">' + tagHtml(r.meal || r.kind) + (r.user ? '<span class="tag">旅伴新增</span>' : '') + sub.join('<span class="dot">·</span>') + '</div></span>' +
         (thumb && r.img ? '<img class="th" src="' + esc(r.img) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="' + imgFail + '">' : '<span></span>') +
         '</button></li>';
 }
@@ -1337,8 +1384,9 @@ function renderDay() {
     var dt = dateOf(d.n), today = new Date();
     var isToday = today.toDateString() === dt.toDateString();
     $('[data-today-h]').textContent = isToday ? '今日行程' : 'Day ' + d.n + ' 行程';
-    var first = d.rows.slice(0, 3).map(function (r) { return rowLi(r, false); }).join('');
-    var rest = d.rows.length - 3;
+    var all = dayRows(d);
+    var first = all.slice(0, 3).map(function (r) { return rowLi(r, false); }).join('');
+    var rest = all.length - 3;
     $('[data-home-tl]').innerHTML = first + (rest > 0 ? '<li><button class="tl-more" data-go="plan">還有 ' + rest + ' 個行程</button></li>' : '');
     $('[data-plan-title]').innerHTML = 'Day ' + d.n + '<small>行程</small>';
     renderFlow(d);
@@ -1381,12 +1429,14 @@ function stopHtml(r) {
 }
 function renderFlow(d) {
     var mins = 0;
-    $('[data-flow]').innerHTML = d.rows.map(function (r, i) {
+    $('[data-flow]').innerHTML = dayRows(d).map(function (r) {
+        if (r.user) { var ug = userLeg(r.user); if (ug) mins += ug.mins; return (ug ? legHtml(ug) : '') + userStopHtml(r); }
+        var i = +r.id.split('-')[1];
         var g = legOf(r), L2 = LEG_BY[d.n + '-' + i];
         if (L2 && !g) g = { mode: 'taxi', mins: Math.max(1, L2.drive), km: String(L2.km), text: L2.frm + '→' + L2.to };
         if (g) mins += g.mins;
         return (g ? (L2 ? '<button class="legbtn" data-leg="' + L2.i + '">' + legHtml(g) + legChips(L2) + '</button>' : legHtml(g)) : '') + stopHtml(r);
-    }).join('');
+    }).join('') + (S.formUrl ? '<a class="addbtn" style="width:100%;margin:14px 0 0" href="' + esc(S.formUrl) + '" target="_blank" rel="noopener">' + icon('plus') + '新增行程</a>' : '');
     var krw = DAY_COST[d.n] || 0;
     $('[data-stats]').innerHTML =
         '<div><span>交通時間</span><b>' + (mins >= 60 ? Math.floor(mins / 60) + '<small>時</small>' : '') + (mins % 60) + '<small>分</small></b><em>' + d.rows.filter(legOf).length + ' 段移動</em></div>' +
@@ -1569,7 +1619,30 @@ function openRow(id) {
 }
 
 // ======== 地圖 ========
-var MAP = null, LAYERS = {}, MARKERS = [], EX_MARKERS = [], picked = [], routeLine = null;
+var MAP = null, LAYERS = {}, MARKERS = [], EX_MARKERS = [], picked = [], routeLine = null, USER_MARKERS = {};
+function userMarkers() {
+    if (!MAP) return;
+    Object.keys(USER_MARKERS).forEach(function (id) {
+        var m = USER_MARKERS[id]; MAP.removeLayer(m);
+        Object.keys(LAYERS).forEach(function (k) { LAYERS[k] = LAYERS[k].filter(function (x) { return x !== m; }); });
+    });
+    USER_MARKERS = {};
+    S.trips.forEach(function (t) {
+        if (!t.lat || !t.lng) return;
+        var r = userRow(t);
+        var m = L.circleMarker([t.lat, t.lng], { radius: 8, color: '#FBFDFF', weight: 2.5, dashArray: '3 3', fillColor: DAY_COLOR[t.day] || '#978B7C', fillOpacity: 1 });
+        m._label = t.title;
+        m.addTo(MAP).bindPopup('<b>' + esc(t.title) + '</b><br>Day ' + t.day + '・' + esc(r.t0) + '<br><span style="color:var(--muted)">旅伴新增・' + esc(t.by) + '</span>' +
+            '<br><button class="pbtn" data-goto="' + r.id + '">看行程細節 ›</button>');
+        m.on('click', function () { onPick(m); });
+        (LAYERS[String(t.day)] = LAYERS[String(t.day)] || []).push(m);
+        USER_MARKERS[r.id] = m;
+    });
+}
+function focusUser(id) {
+    go('map');
+    setTimeout(function () { var m = USER_MARKERS[id]; if (!m) return; MAP.invalidateSize(); MAP.setView(m.getLatLng(), 15); m.openPopup(); }, 80);
+}
 function initMap() {
     if (MAP) return;
     var el = $('#map');
@@ -1624,6 +1697,7 @@ function initMap() {
         EX_MARKERS.push(em);
     });
     addRideStops();
+    userMarkers();
     fitAll();
 
     var chips = [['all', '全部']].concat(DAYS.map(function (d) { return [String(d.n), 'Day ' + d.n]; }), [['ex', '換錢'], ['ride', '搭車站'], ['stay', '住宿'], ['bus', '飯店公車站']]);
@@ -2021,6 +2095,7 @@ document.addEventListener('click', function (e) {
     if (t.matches('[data-close]')) return closeSheet();
     if ((a = t.getAttribute('data-save'))) { e.stopPropagation(); return toggleSave(a); }
     if ((a = t.getAttribute('data-focus'))) return focusSpot(+a);
+    if ((a = t.getAttribute('data-ufocus'))) return focusUser(a);
     if ((a = t.getAttribute('data-exfocus'))) return focusEx(+a);
     if ((a = t.getAttribute('data-leg'))) return openLeg(+a);
     if ((a = t.getAttribute('data-busstop'))) return focusBusStop(a);
@@ -2028,7 +2103,11 @@ document.addEventListener('click', function (e) {
     if (t.getAttribute('data-mapfilter')) { go('map'); return setTimeout(function () { if (MAP) { MAP.invalidateSize(); mapFocusKey(t.getAttribute('data-mapfilter')); } }, 80); }
     if ((a = t.getAttribute('data-row'))) return openRow(a);
     if ((a = t.getAttribute('data-stop'))) return openStop(a);
-    if ((a = t.getAttribute('data-goto'))) { go('plan'); return openStop(a, true); }
+    if ((a = t.getAttribute('data-goto'))) {
+        var gd = a.charAt(0) === 'u' ? (S.trips.filter(function (x) { return 'u' + x.id === a; })[0] || {}).day : +a.split('-')[0];
+        if (gd && gd !== S.day) { S.day = gd; renderDay(); }
+        go('plan'); return openStop(a, true);
+    }
     if ((a = t.getAttribute('data-mdel'))) return delMember(a);
     if (t.id === 'mAdd') return addMember();
     if (t.id === 'pkAdd') return addPack();
