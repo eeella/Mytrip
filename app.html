@@ -1,0 +1,2082 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#D5E1EE">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Jeju 遊記．濟州島冬季小資六日</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root {
+    --bg: #D5E1EE;
+    --bg-deep: #C3D3E5;
+    --card: #FBFDFF;
+    --card-2: #E7EFF8;
+    --chip: #CDDDEE;
+    --ink: #0F2036;
+    --ink-2: #273A53;
+    --muted: #48586B;
+    --gold: #245A96;
+    --gold-soft: #C4D9F1;
+    --dash: rgba(15, 32, 54, .3);
+    --warn: #A4553A;
+    --warn-soft: #F3E1D6;
+    --ok: #155F63;
+    --ok-soft: #CBE6E6;
+    --shadow: 0 14px 30px -20px rgba(20, 44, 80, .55), 0 2px 6px -3px rgba(20, 44, 80, .18);
+    --shadow-lg: 0 24px 50px -24px rgba(20, 44, 80, .6), 0 4px 12px -6px rgba(20, 44, 80, .2);
+    --radius: 22px;
+    --serif: "Noto Sans TC", -apple-system, "PingFang TC", "Microsoft JhengHei", "Heiti TC", sans-serif;
+    --latin: "Manrope", "Noto Sans TC", -apple-system, "PingFang TC", "Microsoft JhengHei", "Heiti TC", sans-serif;
+    --sans: "Noto Sans TC", -apple-system, "PingFang TC", "Microsoft JhengHei", "Heiti TC", sans-serif;
+    --tabbar: 78px;
+    --gutter: 20px;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html { background: var(--bg-deep); font-synthesis: none; font-variant-numeric: lining-nums tabular-nums; }
+body {
+    margin: 0; background: var(--bg-deep); color: var(--ink);
+    font-family: var(--sans); font-size: 15px; line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+}
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+a { color: var(--gold); }
+img { display: block; max-width: 100%; }
+svg.i { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+.app {
+    position: relative; max-width: 460px; min-height: 100dvh; margin: 0 auto;
+    background: var(--bg); overflow-x: hidden;
+}
+@media (min-width: 520px) { .app { box-shadow: 0 0 60px -20px rgba(20, 44, 80, .35); } }
+
+.view { display: none; padding: calc(env(safe-area-inset-top) + 28px) 0 calc(var(--tabbar) + env(safe-area-inset-bottom) + 34px); }
+.view.on { display: block; animation: fade .28s ease; }
+@keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.pad { padding: 0 var(--gutter); }
+
+/* ---------- header ---------- */
+.head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 0 var(--gutter); }
+.kicker { font-family: var(--latin); font-weight: 600; font-size: 13px; letter-spacing: .04em; color: var(--muted); margin: 0; }
+.kicker em { font-family: var(--serif); font-style: normal; letter-spacing: .08em; color: var(--gold); }
+.title { margin: 4px 0 0; font-family: var(--latin); font-weight: 800; font-size: 34px; line-height: 1.1; letter-spacing: .01em; }
+.title small { font-family: var(--serif); font-weight: 700; font-size: 26px; color: var(--gold); margin-left: 8px; letter-spacing: .06em; }
+.subline { margin: 6px 0 0; font-size: 13px; color: var(--muted); letter-spacing: .04em; }
+.subline b { color: var(--ink-2); font-weight: 500; }
+.round-btn {
+    width: 52px; height: 52px; border-radius: 50%; background: var(--card); box-shadow: var(--shadow);
+    display: grid; place-items: center; color: var(--ink); flex: none;
+}
+.round-btn:active { transform: scale(.95); }
+
+/* ---------- day strip ---------- */
+.strip {
+    display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none;
+    padding: 22px var(--gutter) 18px; scroll-padding: 0 var(--gutter);
+}
+.strip::-webkit-scrollbar { display: none; }
+.dcard {
+    position: relative; flex: none; width: 66px; height: 92px; border-radius: 22px; scroll-snap-align: start;
+    background: var(--card); box-shadow: var(--shadow); text-align: center; padding-top: 16px;
+    transition: background .2s, color .2s, transform .2s;
+}
+.dcard:active { transform: scale(.96); }
+.dcard .wd { font-family: var(--serif); font-size: 12.5px; letter-spacing: .08em; color: var(--muted); line-height: 1; }
+.dcard .dd { font-family: var(--latin); font-weight: 700; font-size: 26px; line-height: 1.05; margin-top: 4px; }
+.dcard .mm { font-size: 11px; color: var(--ink-2); letter-spacing: .06em; }
+.dcard .dn { position: absolute; top: 6px; right: 9px; font-family: var(--latin); font-size: 12px; color: var(--muted); }
+.dcard.on { background: var(--ink); color: var(--card); box-shadow: var(--shadow-lg); }
+.dcard.on .wd, .dcard.on .dn, .dcard.on .mm { color: rgba(251, 253, 255, .78); }
+
+.scrub { display: flex; align-items: center; gap: 12px; padding: 0 10px; }
+.scrub .round-btn { width: 40px; height: 40px; }
+.scrub .round-btn svg { width: 18px; height: 18px; }
+.scrub-mid { flex: 1; text-align: center; }
+.range { -webkit-appearance: none; appearance: none; width: 100%; height: 8px; border-radius: 8px; margin: 0; background: linear-gradient(to right, var(--ink) var(--p, 0%), var(--gold-soft) var(--p, 0%)); outline: none; }
+.range::-webkit-slider-thumb { -webkit-appearance: none; width: 26px; height: 26px; border-radius: 50%; background: var(--ink); border: 4px solid var(--card); box-shadow: 0 2px 8px rgba(15, 32, 54, .35); cursor: pointer; }
+.range::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: var(--ink); border: 4px solid var(--card); box-shadow: 0 2px 8px rgba(15, 32, 54, .35); cursor: pointer; }
+.scrub-lbl { font-family: var(--latin); font-size: 15px; letter-spacing: .04em; color: var(--muted); margin-top: 6px; }
+
+/* ---------- cards ---------- */
+.card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px 22px; }
+.sec { margin: 18px var(--gutter) 0; }
+.card-h { display: flex; align-items: center; gap: 12px; margin: 0 0 6px; }
+.card-h h3 { margin: 0; font-family: var(--serif); font-weight: 500; font-size: 19px; letter-spacing: .06em; flex: 1; }
+.card-h .more { font-size: 14px; color: var(--gold); display: inline-flex; align-items: center; gap: 2px; }
+.card-h .more svg { width: 16px; height: 16px; }
+.card-h > svg { color: var(--gold); }
+
+.theme { margin-top: 22px; padding: 22px; }
+.theme .dlabel { font-family: var(--latin); font-size: 15px; letter-spacing: .04em; color: var(--gold); }
+.theme h2 { margin: 2px 0 8px; font-family: var(--serif); font-weight: 700; font-size: 22px; line-height: 1.4; letter-spacing: .04em; }
+.theme .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag { display: inline-block; font-size: 12px; padding: 2px 10px; border-radius: 99px; background: var(--chip); color: var(--ink-2); letter-spacing: .04em; white-space: nowrap; }
+.tag.warn { background: var(--warn-soft); color: var(--warn); }
+.tag.food { background: #F1E6CC; color: #8A5E2C; }
+.tag.spot { background: var(--ok-soft); color: var(--ok); }
+.theme p { margin: 12px 0 0; font-size: 14px; color: var(--ink-2); }
+
+.banner {
+    display: flex; align-items: center; gap: 14px; width: calc(100% - var(--gutter) * 2); margin: 18px var(--gutter) 0;
+    padding: 16px 20px; border-radius: 20px; background: var(--card-2); border: 1.5px dashed rgba(15, 32, 54, .35);
+    text-align: left; font-family: var(--serif); font-size: 16px; letter-spacing: .06em;
+}
+.banner span { flex: 1; }
+.banner > svg:last-child { width: 16px; height: 16px; color: var(--muted); }
+
+.tl { list-style: none; margin: 0; padding: 0; }
+.tl li + li { border-top: 1.5px dashed var(--dash); }
+.tl button { display: grid; grid-template-columns: 70px 1fr auto; gap: 12px; align-items: start; width: 100%; text-align: left; padding: 15px 0; }
+.tl .t { font-family: var(--latin); font-weight: 700; font-size: 17px; line-height: 1.2; color: var(--gold); font-variant-numeric: lining-nums tabular-nums; }
+.tl .t small { display: block; font-size: 14px; color: var(--muted); }
+.tl .nm { font-size: 16.5px; font-weight: 500; line-height: 1.45; color: var(--ink); }
+.tl .pl { font-size: 13.5px; color: var(--muted); margin-top: 3px; }
+.tl .pl .dot { margin: 0 6px; }
+.tl .pl .tag { margin-right: 6px; vertical-align: 1px; }
+.tl .th { width: 58px; height: 58px; border-radius: 14px; object-fit: cover; background: var(--chip); }
+.tl .tl-more { display: block; width: 100%; text-align: center; padding: 14px 0 2px; border-top: 1.5px dashed var(--dash); color: var(--ink-2); font-size: 15px; letter-spacing: .06em; }
+
+.meals { display: grid; gap: 10px; margin-top: 8px; }
+.meal { display: grid; grid-template-columns: 44px 1fr; gap: 10px; font-size: 14px; color: var(--ink-2); }
+.meal b { font-family: var(--serif); font-weight: 500; color: var(--gold); }
+.stay { margin-top: 12px; padding: 14px 16px; border-radius: 16px; background: var(--card-2); font-size: 14px; color: var(--ink-2); }
+.stay .map-link { margin-left: 4px; }
+
+.sec-h { display: flex; align-items: baseline; justify-content: space-between; margin: 34px var(--gutter) 14px; }
+.sec-h h3 { margin: 0; font-family: var(--serif); font-weight: 500; font-size: 22px; letter-spacing: .08em; }
+.sec-h span { font-family: var(--latin); font-size: 16px; letter-spacing: .04em; color: var(--muted); }
+
+.menu { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 0 var(--gutter); }
+.menu button { background: var(--card); border-radius: 20px; box-shadow: var(--shadow); padding: 16px; text-align: left; display: grid; gap: 10px; }
+.menu .ic { width: 42px; height: 42px; border-radius: 14px; background: var(--gold-soft); color: var(--ink); display: grid; place-items: center; }
+.menu b { display: block; font-family: var(--serif); font-weight: 500; font-size: 16px; letter-spacing: .06em; }
+.menu small { display: block; font-size: 12.5px; color: var(--muted); line-height: 1.45; margin-top: 2px; }
+.menu button:nth-child(4n+1) .ic { background: var(--ink); color: var(--card); }
+
+/* ---------- tab bar ---------- */
+.tabbar {
+    position: fixed; z-index: 800; bottom: 0; left: 50%; transform: translateX(-50%); width: min(100%, 460px);
+    height: calc(var(--tabbar) + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom);
+    background: rgba(251, 253, 255, .96); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 -10px 30px -20px rgba(20, 44, 80, .5);
+    display: grid; grid-template-columns: repeat(5, 1fr); align-items: center;
+}
+.tabbar button { display: grid; justify-items: center; gap: 3px; color: #64768A; font-size: 13px; letter-spacing: .1em; font-family: var(--serif); }
+.tabbar button svg { width: 25px; height: 25px; stroke-width: 1.5; }
+.tabbar button.on { color: var(--ink); }
+.tabbar button.on span { font-weight: 700; }
+.tabbar .home { position: relative; top: -16px; }
+.tabbar .home i {
+    width: 68px; height: 68px; border-radius: 50%; background: var(--ink); color: var(--card); display: grid; place-items: center;
+    box-shadow: 0 0 0 7px var(--card), 0 0 0 8px rgba(36, 90, 150, .35), var(--shadow-lg);
+}
+.tabbar .home i svg { width: 28px; height: 28px; stroke-width: 1.9; }
+.tabbar .home span { margin-top: 6px; }
+
+/* ---------- plan view ---------- */
+.plan-list { margin-top: 18px; }
+
+/* ---------- spots ---------- */
+.chips { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 18px var(--gutter) 4px; }
+.chips::-webkit-scrollbar { display: none; }
+.chips button { flex: none; padding: 8px 16px; border-radius: 99px; background: var(--card); box-shadow: var(--shadow); font-size: 14px; letter-spacing: .06em; color: var(--ink-2); white-space: nowrap; }
+.chips button.on { background: var(--ink); color: var(--card); }
+.grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin: 16px var(--gutter) 0; }
+.scard { position: relative; background: var(--card); border-radius: 20px; box-shadow: var(--shadow); overflow: hidden; text-align: left; }
+.scard img, .scard .noimg { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: var(--chip); }
+.scard .bd { padding: 10px 12px 13px; }
+.scard .dn { font-family: var(--latin); font-size: 13px; letter-spacing: .04em; color: var(--gold); }
+.scard b { display: block; font-weight: 500; font-size: 14.5px; line-height: 1.4; margin-top: 1px; }
+.scard small { display: block; color: var(--muted); font-size: 12px; line-height: 1.4; margin-top: 3px; }
+.scard .fav { position: absolute; top: 8px; right: 8px; width: 34px; height: 34px; border-radius: 50%; background: rgba(251, 253, 255, .92); display: grid; place-items: center; color: var(--ink); }
+.scard .fav svg { width: 17px; height: 17px; }
+.scard .fav.on svg { fill: var(--ink); }
+.empty { margin: 30px var(--gutter); text-align: center; color: var(--muted); font-size: 14px; }
+
+/* ---------- map view ---------- */
+#v-map { padding-bottom: 0; }
+#v-map.on { display: flex; flex-direction: column; height: 100dvh; padding-bottom: calc(var(--tabbar) + env(safe-area-inset-bottom)); }
+.mapbox { position: relative; flex: 1; margin: 12px var(--gutter) 14px; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); min-height: 260px; }
+#map { position: absolute; inset: 0; background: var(--card-2); }
+.route-tip { position: absolute; z-index: 500; left: 10px; right: 10px; bottom: 10px; padding: 11px 14px; border-radius: 16px; background: rgba(251, 253, 255, .97); box-shadow: var(--shadow); font-size: 13.5px; color: var(--ink-2); display: flex; align-items: center; gap: 8px; }
+.route-tip span { flex: 1; }
+.route-tip button { color: var(--gold); font-size: 13px; white-space: nowrap; }
+.leaflet-popup-content-wrapper { border-radius: 16px; background: var(--card); box-shadow: var(--shadow-lg); }
+.leaflet-popup-tip { background: var(--card); }
+.leaflet-popup-content { margin: 12px 16px; font-family: var(--sans); font-size: 13.5px; line-height: 1.55; color: var(--ink); }
+.leaflet-popup-content .pbtn { margin-top: 6px; color: var(--gold); font-weight: 500; }
+.leaflet-container a.leaflet-popup-close-button { color: var(--muted); }
+.ex-pin span { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: #A2835A; color: #FBFDFF; font-weight: 700; font-size: 14px; box-shadow: 0 0 0 2.5px #FBFDFF, 0 2px 6px rgba(15, 32, 54, .35); }
+.stay-pin { font-size: 24px; line-height: 30px; text-align: center; }
+.leaflet-control-zoom { border: 0 !important; box-shadow: var(--shadow) !important; border-radius: 14px !important; overflow: hidden; }
+.leaflet-control-zoom a { background: var(--card) !important; color: var(--ink) !important; }
+
+/* ---------- wallet ---------- */
+.wsum { margin: 22px var(--gutter) 0; padding: 22px; border-radius: var(--radius); background: var(--ink); color: var(--card); box-shadow: var(--shadow-lg); }
+.wsum .lbl { font-family: var(--latin); letter-spacing: .04em; font-size: 15px; color: rgba(251, 253, 255, .7); }
+.wsum .big { font-family: var(--latin); font-size: 38px; font-weight: 800; line-height: 1.1; margin: 2px 0 2px; }
+.wsum .big small { font-size: 20px; margin-right: 4px; }
+.wsum .row { display: flex; justify-content: space-between; font-size: 13px; color: rgba(251, 253, 255, .78); margin-top: 12px; }
+.wsum .bar { height: 8px; border-radius: 8px; background: rgba(251, 253, 255, .18); margin-top: 8px; overflow: hidden; }
+.wsum .bar i { display: block; height: 100%; border-radius: 8px; background: #9CC3F0; }
+.wsum .bar i.over { background: #E08A6A; }
+.addbtn { display: flex; align-items: center; justify-content: center; gap: 8px; width: calc(100% - var(--gutter) * 2); margin: 16px var(--gutter) 0; padding: 15px; border-radius: 18px; background: var(--card); box-shadow: var(--shadow); font-family: var(--serif); font-size: 16px; letter-spacing: .1em; }
+.cats { display: grid; gap: 10px; margin-top: 10px; }
+.cat { display: grid; grid-template-columns: 56px 1fr auto; gap: 10px; align-items: center; font-size: 13.5px; color: var(--ink-2); }
+.cat .b { height: 8px; border-radius: 8px; background: var(--card-2); overflow: hidden; }
+.cat .b i { display: block; height: 100%; background: var(--gold); border-radius: 8px; }
+.cat em { font-style: normal; font-family: var(--latin); font-size: 16px; color: var(--ink); }
+.xlist { list-style: none; margin: 4px 0 0; padding: 0; }
+.xlist li { display: grid; grid-template-columns: 1fr auto 30px; gap: 10px; align-items: center; padding: 12px 0; }
+.xlist li + li { border-top: 1.5px dashed var(--dash); }
+.xlist .n { font-size: 15px; }
+.xlist .n small { display: block; font-size: 12.5px; color: var(--muted); }
+.xlist .a { text-align: right; font-family: var(--latin); font-size: 19px; line-height: 1.2; }
+.xlist .a small { display: block; font-family: var(--sans); font-size: 11.5px; color: var(--muted); }
+.xlist .del { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; color: var(--muted); }
+.xlist .del svg { width: 16px; height: 16px; }
+.dayh { font-family: var(--latin); letter-spacing: .04em; color: var(--gold); font-size: 15px; margin: 14px 0 0; }
+.note { font-size: 12.5px; color: var(--muted); margin: 10px 0 0; line-height: 1.6; }
+
+/* ---------- forms ---------- */
+.field { display: block; margin-top: 14px; }
+.field > span { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; letter-spacing: .06em; }
+.input { width: 100%; padding: 13px 15px; border-radius: 14px; border: 0; background: var(--card-2); font: inherit; font-size: 16px; color: var(--ink); outline: none; }
+.input:focus { box-shadow: 0 0 0 2px var(--gold); }
+.amt { display: flex; gap: 8px; }
+.amt .input { font-family: var(--latin); font-size: 26px; padding: 8px 15px; }
+.seg { display: flex; gap: 6px; flex-wrap: wrap; }
+.seg button { padding: 9px 15px; border-radius: 12px; background: var(--card-2); font-size: 14px; color: var(--ink-2); }
+.seg button.on { background: var(--ink); color: var(--card); }
+.primary { width: 100%; margin-top: 20px; padding: 15px; border-radius: 16px; background: var(--ink); color: var(--card); font-family: var(--serif); font-size: 16px; letter-spacing: .04em; }
+.ghost { width: 100%; margin-top: 10px; padding: 13px; border-radius: 16px; background: var(--card-2); color: var(--warn); font-size: 14px; }
+
+/* ---------- sheet ---------- */
+.scrim { position: fixed; inset: 0; z-index: 900; background: rgba(10, 22, 40, .38); opacity: 0; pointer-events: none; transition: opacity .25s; }
+.scrim.on { opacity: 1; pointer-events: auto; }
+.sheet {
+    position: fixed; z-index: 901; left: 50%; bottom: 0; width: min(100%, 460px); max-height: 88dvh; overflow-y: auto; overscroll-behavior: contain;
+    transform: translate(-50%, 102%); transition: transform .3s cubic-bezier(.2, .8, .2, 1);
+    background: var(--bg); border-radius: 28px 28px 0 0; box-shadow: var(--shadow-lg);
+    padding: 12px var(--gutter) calc(28px + env(safe-area-inset-bottom));
+}
+.sheet:not(.on) { visibility: hidden; transition: transform .3s cubic-bezier(.2, .8, .2, 1), visibility 0s .3s; }
+.sheet.on { transform: translate(-50%, 0); }
+.grab { width: 44px; height: 5px; border-radius: 5px; background: rgba(15, 32, 54, .2); margin: 0 auto 12px; }
+.sheet-x { position: sticky; top: 0; float: right; width: 38px; height: 38px; border-radius: 50%; background: var(--card); box-shadow: var(--shadow); display: grid; place-items: center; z-index: 2; }
+.sheet-x svg { width: 18px; height: 18px; }
+.sheet h2 { font-family: var(--serif); font-weight: 700; font-size: 22px; line-height: 1.4; letter-spacing: .04em; margin: 6px 0 8px; }
+.sheet .hero { width: calc(100% + var(--gutter) * 2); max-width: none; margin: 0 calc(var(--gutter) * -1) 14px; aspect-ratio: 16 / 10; object-fit: cover; background: var(--chip); }
+.sheet .cap { font-size: 12px; color: var(--muted); margin: -8px 0 12px; }
+.sheet .when { font-family: var(--latin); font-size: 17px; letter-spacing: .1em; color: var(--gold); }
+.sheet .desc { font-size: 15px; color: var(--ink-2); line-height: 1.75; }
+.sheet .desc b { color: var(--ink); }
+.sheet .place { margin-top: 14px; padding: 14px 16px; border-radius: 16px; background: var(--card); font-size: 14px; color: var(--ink-2); }
+.sheet .place strong { display: block; color: var(--ink); font-weight: 500; font-size: 15px; margin-bottom: 2px; }
+.drv { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; padding: 4px 12px; border-radius: 99px; background: var(--gold-soft); color: var(--ink-2); margin: 4px 0 10px; }
+.btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.btns a, .btns button { display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; border-radius: 14px; background: var(--card); box-shadow: var(--shadow); font-size: 14px; color: var(--ink); text-decoration: none; }
+.btns .dark { background: var(--ink); color: var(--card); }
+.btns svg { width: 17px; height: 17px; }
+
+/* ---------- info (出團資訊) ---------- */
+.info { margin: 16px var(--gutter) 0; font-size: 14.5px; color: var(--ink-2); }
+.info h2 { font-family: var(--serif); font-weight: 700; font-size: 20px; line-height: 1.45; color: var(--ink); margin: 0 0 6px; letter-spacing: .03em; }
+.info h3 { font-family: var(--serif); font-weight: 500; font-size: 17px !important; color: var(--ink) !important; margin: 26px 0 8px !important; letter-spacing: .04em; }
+.info h4 { font-family: var(--serif); font-weight: 500; font-size: 15.5px; color: var(--ink); margin: 0 0 6px; }
+.info p { margin: 8px 0; }
+.info .addr { color: var(--ink-2); }
+.info .bus-note, .info .map-sub { font-size: 13px; color: var(--muted); }
+.info ul { margin: 0; padding-left: 18px; }
+.info li { margin-bottom: 4px; }
+.info .map-link, .stay .map-link, .sheet .map-link {
+    display: inline-flex; align-items: center; padding: 3px 11px; margin: 3px 2px; border-radius: 99px; background: var(--gold-soft);
+    color: var(--ink); text-decoration: none; font-size: 12.5px; white-space: nowrap;
+}
+.info .hotel-meta { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 12px 0; }
+.info .hotel-meta > div { background: var(--card); border-radius: 16px; padding: 12px; font-size: 12.5px; text-align: center; box-shadow: var(--shadow); }
+.info .hotel-meta b { display: block; color: var(--ink); font-size: 14px; margin-top: 2px; }
+.info .booksplit, .info .plan-block, .info .t-card, .info .pro, .info .con { background: var(--card); border-radius: 18px; padding: 14px 16px; margin: 12px 0; box-shadow: var(--shadow); }
+.info .booksplit h4 { margin-bottom: 4px; }
+.info .t-grid { display: grid; gap: 0; }
+.info .t-card.ok { background: var(--ok-soft); box-shadow: none; }
+.info .t-card.warn, .info .plan-block.bus, .info .con { background: var(--warn-soft); box-shadow: none; }
+.info .pro { background: var(--ok-soft); box-shadow: none; }
+.info .plan-tag { font-size: 14px; }
+.info .plan-pros { display: grid; gap: 0; }
+.info .plan-details { margin: 12px 0; }
+.info .plan-details summary { cursor: pointer; font-weight: 500; color: var(--ink); padding: 8px 0; }
+.info .planpanel { display: none; }
+.info .planpanel.show { display: block; }
+.info .planpanel > h3:first-child { margin-top: 18px !important; }
+.info .plantabs { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 4px calc(var(--gutter) * -1) 0; padding: 4px var(--gutter) 10px; }
+.info .plantabs::-webkit-scrollbar { display: none; }
+.info .plantabs button { flex: none; padding: 9px 15px; border-radius: 99px; background: var(--card); box-shadow: var(--shadow); font-size: 13.5px; color: var(--ink-2); white-space: nowrap; }
+.info .plantabs button.active { background: var(--ink); color: var(--card); }
+/* 表格 → 手機卡片 */
+.info table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+.info table tr:first-child:has(th) { display: none; }
+.info table, .info tbody, .info tr, .info td { display: block; }
+.info tr { background: var(--card); border-radius: 18px; padding: 12px 16px; margin-bottom: 10px; box-shadow: var(--shadow); }
+.info tr.near { background: var(--ok-soft); box-shadow: none; }
+.info td { padding: 4px 0; font-size: 13.5px; }
+.info td + td { border-top: 1.5px dashed var(--dash); padding-top: 7px; margin-top: 4px; }
+.info td[data-label]::before { content: attr(data-label); display: block; font-size: 11.5px; color: var(--muted); letter-spacing: .08em; margin-bottom: 1px; }
+.info td.kr:first-child { font-family: var(--serif); font-size: 16px; color: var(--ink); border-top: 0; }
+.info td.kr:first-child::before { display: none; }
+.info div[style*="overflow-x"] { overflow: visible !important; }
+
+.seg-top { display: flex; gap: 6px; margin: 20px var(--gutter) 0; padding: 5px; border-radius: 16px; background: var(--card-2); }
+.seg-top button { flex: 1; padding: 10px 4px; border-radius: 12px; font-size: 14px; letter-spacing: .06em; color: var(--ink-2); }
+.seg-top button.on { background: var(--card); color: var(--ink); box-shadow: var(--shadow); font-weight: 500; }
+
+.ex-dot { width: 24px; height: 24px; border-radius: 50%; background: #A2835A; color: #FBFDFF; display: grid; place-items: center; font-size: 13px; font-weight: 700; flex: none; }
+.ex-tip { margin: 2px 0 4px; font-size: 13.5px; color: var(--ink-2); }
+.ex-row { padding: 12px 0 2px; }
+.ex-row + .ex-row { border-top: 1.5px dashed var(--dash); }
+.ex-row b { display: block; font-weight: 500; font-size: 15.5px; }
+.ex-row small { display: block; font-size: 13px; color: var(--muted); margin-top: 1px; }
+.ex-row .btns { margin-top: 8px; gap: 6px; flex-wrap: nowrap; }
+.ex-row .btns svg { width: 15px; height: 15px; }
+.ex-row .btns a, .ex-row .btns button { box-shadow: none; background: var(--card-2); padding: 7px 11px; font-size: 13px; gap: 5px; white-space: nowrap; }
+.ex-row .btns .dark { background: var(--ink); }
+.legbtn { display: block; width: 100%; text-align: left; padding: 0; }
+.legbtn .leg { padding-bottom: 2px; }
+.legopt { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 4px 10px 48px; font-size: 12.5px; }
+.legopt span { padding: 3px 10px; border-radius: 99px; background: var(--card); color: var(--ink-2); white-space: nowrap; }
+.legopt .b { background: var(--ok-soft); color: var(--ok); font-weight: 500; }
+.legopt .n { color: var(--muted); }
+.legopt .more2 { background: none; color: var(--gold); padding: 3px 2px; }
+.mode-card { background: var(--card); border-radius: 18px; padding: 14px 16px; margin-top: 12px; font-size: 14px; color: var(--ink-2); }
+.mode-card p { margin: 6px 0 0; }
+.mode-h { display: flex; align-items: center; gap: 8px; }
+.mode-h b { flex: 1; font-size: 16px; font-weight: 500; color: var(--ink); }
+.mode-h span { font-family: var(--latin); font-size: 18px; color: var(--ink); }
+.mode-h svg { width: 20px; height: 20px; color: var(--gold); }
+.busopt { margin-top: 12px; padding: 12px 14px; border-radius: 14px; background: var(--card-2); }
+.busnum { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.busnum b { font-family: var(--latin); font-size: 22px; font-weight: 600; color: var(--card); background: var(--ok); border-radius: 10px; padding: 0 10px; line-height: 1.4; }
+.busnum span { font-size: 13px; color: var(--ink-2); flex: 1; min-width: 0; }
+.busnum em { font-style: normal; font-size: 12px; padding: 2px 8px; border-radius: 99px; background: var(--ok-soft); color: var(--ok); }
+.steps { margin: 10px 0 0; padding-left: 20px; font-size: 13.5px; }
+.steps li { margin-bottom: 8px; }
+.steps li small { display: block; color: var(--muted); font-size: 12px; }
+.stopchip { display: inline-flex; align-items: center; gap: 4px; margin-top: 3px; padding: 4px 10px; border-radius: 99px; background: var(--ok-soft); color: var(--ok); font-size: 13px; font-weight: 500; text-align: left; }
+.stopchip svg { width: 14px; height: 14px; }
+.busfoot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 10px; font-size: 13px; padding-top: 8px; border-top: 1.5px dashed var(--dash); }
+.ride-pin span { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 8px; background: #155F63; font-size: 13px; box-shadow: 0 0 0 2px #FBFDFF, 0 2px 6px rgba(15, 32, 54, .35); }
+.cost-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0; }
+.cost-tot { background: var(--card); border-radius: 18px; padding: 12px 14px; box-shadow: var(--shadow); }
+.cost-tot span { display: block; font-size: 13px; color: var(--ink-2); }
+.cost-tot b { display: block; font-family: var(--latin); font-weight: 600; font-size: 24px; color: var(--ink); line-height: 1.25; }
+.cost-tot em { display: block; font-style: normal; font-size: 12.5px; color: var(--ok); }
+.cost-tot small { display: block; font-size: 11.5px; color: var(--muted); line-height: 1.45; margin-top: 3px; }
+.info td small { display: block; font-size: 11.5px; color: var(--muted); }
+.leg .mins, .xlist .a, .settle .v, .mode-h span, .cat em, .scrub-lbl, .theme .dlabel, .scard .dn, .sheet .when, .feat .en, .tips .en, .sec-h span, .pk-prog, .dcard .dn { font-weight: 600; }
+.fallback { display: grid; place-items: center; color: var(--muted); font-size: 12px; background: var(--chip); }
+
+/* ---------- 首頁功能大卡 ---------- */
+.feat { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin: 0 var(--gutter); }
+.feat button { background: var(--card); border-radius: 24px; box-shadow: var(--shadow); padding: 20px 18px 18px; text-align: left; min-height: 188px; display: flex; flex-direction: column; }
+.feat button:active, .menu button:active, .tips:active { transform: scale(.98); }
+.feat .ill { width: 64px; height: 64px; margin-bottom: auto; }
+.feat .en { font-family: var(--latin); font-size: 19px; color: var(--gold); margin-top: 18px; line-height: 1.1; }
+.feat b { display: block; font-family: var(--serif); font-weight: 500; font-size: 19px; letter-spacing: .06em; margin-top: 4px; }
+.feat small { display: block; font-size: 13px; color: var(--ink-2); margin-top: 2px; }
+.tips { display: flex; align-items: center; gap: 16px; width: calc(100% - var(--gutter) * 2); margin: 14px var(--gutter) 0; padding: 18px 20px; border-radius: 24px; background: #C9DBF1; box-shadow: var(--shadow); text-align: left; }
+.tips .ill { width: 58px; height: 58px; flex: none; }
+.tips .en { font-family: var(--latin); font-size: 17px; color: #1F4F86; line-height: 1.1; }
+.tips b { display: block; font-family: var(--serif); font-weight: 500; font-size: 17px; letter-spacing: .06em; }
+.tips small { display: block; font-size: 12.5px; color: #4A5C50; }
+.menu { margin-top: 14px; }
+
+/* ---------- 行程頁：統計、交通列、可展開卡 ---------- */
+.stats { display: grid; grid-template-columns: 1fr 1fr; margin: 16px var(--gutter) 0; border-radius: 22px; background: var(--gold-soft); overflow: hidden; }
+.stats > div { padding: 14px 10px; text-align: center; }
+.stats > div + div { background: rgba(255, 255, 255, .22); }
+.stats span { display: block; font-size: 12.5px; color: var(--ink-2); letter-spacing: .1em; }
+.stats b { display: block; font-family: var(--latin); font-weight: 800; font-size: 24px; line-height: 1.2; color: var(--ink); }
+.stats b small { font-family: var(--serif); font-size: 15px; font-weight: 500; margin: 0 3px; }
+.stats em { display: block; font-style: normal; font-size: 11.5px; color: var(--muted); }
+.stats-note { margin: 6px var(--gutter) 0; font-size: 11.5px; color: var(--muted); }
+.flow { margin: 12px var(--gutter) 0; }
+.leg { display: grid; grid-template-columns: 34px 1fr auto; gap: 10px; align-items: center; padding: 10px 4px; font-size: 13.5px; color: var(--ink-2); }
+.leg .mode { width: 34px; height: 34px; border-radius: 50%; background: var(--gold-soft); display: grid; place-items: center; color: var(--ink); }
+.leg .mode svg { width: 18px; height: 18px; }
+.leg .mode.bus { background: var(--ok-soft); color: var(--ok); }
+.leg .mode.walk { background: var(--card-2); }
+.leg b { font-weight: 500; color: var(--ink); margin-right: 6px; }
+.leg .mins { font-family: var(--latin); font-size: 19px; color: var(--ink); white-space: nowrap; }
+.leg .mins small { font-family: var(--sans); font-size: 12px; color: var(--muted); margin-left: 2px; }
+.stop { background: var(--card); border-radius: 22px; box-shadow: var(--shadow); margin: 4px 0; overflow: hidden; }
+.stop-h { display: grid; grid-template-columns: auto 1fr 22px; gap: 12px; align-items: center; width: 100%; padding: 14px 16px; text-align: left; }
+.stop-h .tchip { font-family: var(--latin); font-weight: 700; font-size: 17px; line-height: 1; padding: 9px 12px 8px; border-radius: 14px; background: var(--card-2); color: var(--ink); font-variant-numeric: lining-nums; }
+.stop-h .nm { font-size: 16px; font-weight: 500; line-height: 1.4; }
+.stop-h .tag { margin-bottom: 4px; }
+.stop-h .chev { width: 20px; height: 20px; color: var(--muted); transition: transform .2s; }
+.stop.open .chev { transform: rotate(90deg); }
+.stop-b { display: none; padding: 0 16px 16px; }
+.stop.open .stop-b { display: block; animation: fade .22s ease; }
+.stop-b .ph { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 16px; background: var(--chip); }
+.stop-b .cap { font-size: 12px; color: var(--muted); margin: 5px 0 0; }
+.stop-b .lbl { font-family: var(--serif); font-weight: 500; font-size: 13.5px; color: var(--ok); letter-spacing: .08em; margin: 12px 0 4px; }
+.stop-b .desc { font-size: 14.5px; line-height: 1.75; color: var(--ink-2); padding-top: 10px; }
+.stop-b .desc b { color: var(--ink); }
+.stop-b .place { margin-top: 10px; padding: 12px 14px; border-radius: 14px; background: var(--card-2); font-size: 13.5px; color: var(--ink-2); }
+.stop-b .place strong { display: block; color: var(--ink); font-weight: 500; }
+.stop-b .btns a, .stop-b .btns button { box-shadow: none; background: var(--card-2); padding: 8px 14px; font-size: 13.5px; }
+.stop-b .btns .dark { background: var(--ink); }
+
+/* ---------- 航班 ---------- */
+.fl { background: var(--card); border-radius: 24px; box-shadow: var(--shadow); padding: 18px; margin: 14px 0; }
+.fl-h { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.fl-h b { flex: 1; font-family: var(--serif); font-weight: 700; font-size: 19px; color: var(--ink); letter-spacing: .08em; }
+.fl label { display: block; font-size: 12px; color: var(--muted); letter-spacing: .08em; margin: 10px 0 4px; }
+.fl .input { font-size: 15px; padding: 11px 13px; text-align: center; }
+.fl .route { display: grid; grid-template-columns: 1fr 20px 1fr; gap: 6px; align-items: end; }
+.fl .route > span { text-align: center; color: var(--muted); padding-bottom: 12px; }
+.fl .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.fl .two > div, .fl .route > div { min-width: 0; }
+.fl .input { min-width: 0; width: 100%; -webkit-appearance: none; appearance: none; }
+.fl .tm { font-family: var(--latin); font-size: 22px !important; }
+
+/* ---------- 分帳 ---------- */
+.mem { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.mem span { display: inline-flex; align-items: center; gap: 6px; padding: 6px 6px 6px 14px; border-radius: 99px; background: var(--card-2); font-weight: 500; }
+.mem span button { width: 24px; height: 24px; border-radius: 50%; background: var(--warn-soft); color: var(--warn); display: grid; place-items: center; }
+.mem span button svg { width: 12px; height: 12px; stroke-width: 2.4; }
+.addrow { display: flex; gap: 8px; margin-top: 10px; }
+.addrow .input { flex: 1; font-size: 15px; padding: 11px 13px; }
+.addrow button { padding: 0 16px; border-radius: 14px; background: var(--ink); color: var(--card); font-size: 14px; white-space: nowrap; }
+.mtable { margin-top: 10px; }
+.mrow { display: grid; grid-template-columns: 1fr 64px 108px; gap: 8px; align-items: center; padding: 8px 0; }
+.mrow + .mrow { border-top: 1.5px dashed var(--dash); }
+.mrow.h { font-size: 11.5px; color: var(--muted); letter-spacing: .06em; padding-bottom: 2px; }
+.mrow .input { padding: 9px 10px; font-size: 15px; text-align: right; }
+.mrow b { font-weight: 500; }
+.settle { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; align-items: center; padding: 10px 0; }
+.settle + .settle { border-top: 1.5px dashed var(--dash); }
+.settle .v { font-family: var(--latin); font-size: 21px; text-align: right; }
+.settle .v.pay { color: var(--warn); }
+.settle .v.get { color: var(--ok); }
+.settle small { grid-column: 1 / -1; font-size: 12px; color: var(--muted); }
+.row-btns { display: flex; gap: 10px; margin: 14px var(--gutter) 0; }
+.row-btns .addbtn { margin: 0; flex: 1; width: auto; }
+.pill-btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 99px; background: var(--ok-soft); color: var(--ok); font-size: 14px; }
+.pill-btn svg { width: 17px; height: 17px; }
+
+/* ---------- 行李 ---------- */
+.pk h4 { font-family: var(--serif); font-weight: 500; font-size: 16px; margin: 0 0 4px; letter-spacing: .06em; }
+.pk ul { list-style: none; margin: 0; padding: 0; }
+.pk li { display: flex; align-items: center; gap: 12px; padding: 10px 0; }
+.pk li + li { border-top: 1.5px dashed var(--dash); }
+.pk label { flex: 1; display: flex; align-items: center; gap: 12px; cursor: pointer; font-size: 15px; }
+.pk input { appearance: none; -webkit-appearance: none; width: 24px; height: 24px; border-radius: 8px; background: var(--card-2); flex: none; display: grid; place-items: center; margin: 0; cursor: pointer; }
+.pk input:checked { background: var(--ink); }
+.pk input:checked::after { content: ""; width: 10px; height: 6px; border: 2.4px solid var(--card); border-top: 0; border-right: 0; transform: translateY(-1px) rotate(-45deg); }
+.pk input:checked + span { color: var(--muted); text-decoration: line-through; }
+.pk label small { display: block; font-size: 12px; color: var(--muted); text-decoration: none; }
+.pk .del { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; color: var(--muted); }
+.pk .del svg { width: 14px; height: 14px; }
+.pk-prog { font-family: var(--latin); font-size: 15px; color: var(--gold); letter-spacing: .1em; }
+</style>
+</head>
+<body>
+<div class="app">
+
+    <!-- ========== 首頁 ========== -->
+    <section class="view" id="v-home">
+        <div class="head">
+            <div>
+                <p class="kicker">Annyeong · <em>濟州之旅</em></p>
+                <h1 class="title">Jeju<small>遊記</small></h1>
+                <p class="subline" id="countdown"></p>
+            </div>
+            <button class="round-btn" data-open="settings" aria-label="設定"><svg class="i"><use href="#i-gear"/></svg></button>
+        </div>
+        <div class="strip" data-strip></div>
+        <div class="scrub">
+            <button class="round-btn" data-step="-1" aria-label="前一天"><svg class="i"><use href="#i-left"/></svg></button>
+            <div class="scrub-mid">
+                <input class="range" type="range" min="1" max="6" step="1" data-range aria-label="選擇天數">
+                <div class="scrub-lbl" data-scrub-lbl></div>
+            </div>
+            <button class="round-btn" data-step="1" aria-label="下一天"><svg class="i"><use href="#i-right"/></svg></button>
+        </div>
+
+        <div class="card sec theme" data-theme></div>
+
+        <button class="banner" data-go="info" data-info="flight"><svg class="i"><use href="#i-plane"/></svg><span>出團資訊 · 航班時刻表</span><svg class="i"><use href="#i-right"/></svg></button>
+
+        <div class="card sec">
+            <div class="card-h">
+                <svg class="i"><use href="#i-cal"/></svg>
+                <h3 data-today-h>當日行程</h3>
+                <button class="more" data-go="plan">查看全部<svg class="i"><use href="#i-right"/></svg></button>
+            </div>
+            <ul class="tl" data-home-tl></ul>
+        </div>
+
+        <div class="card sec" data-ex></div>
+        <div class="card sec" data-meta></div>
+
+        <div class="sec-h"><h3>功能總覽</h3><span>Menu</span></div>
+        <div class="feat">
+            <button data-go="plan">
+                <svg class="ill" viewBox="0 0 64 64" fill="none" stroke="#243C5C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="8" y="13" width="44" height="40" rx="6" fill="#FBFDFF"/><path d="M8 24h44M19 8v10M41 8v10"/>
+                    <circle cx="20" cy="33" r="1.8" fill="#8FB4E0" stroke="none"/><circle cx="30" cy="33" r="1.8" fill="#243C5C" stroke="none"/><circle cx="40" cy="33" r="1.8" fill="#243C5C" stroke="none"/>
+                    <circle cx="20" cy="43" r="1.8" fill="#243C5C" stroke="none"/><circle cx="30" cy="43" r="1.8" fill="#8FB4E0" stroke="none"/>
+                    <path d="M47 13c4-6 11-6 13-4-2 6-8 8-13 4z" fill="#7FA6D6"/><path d="M47 13c4-2 7-3 10-3"/>
+                </svg>
+                <span class="en">Plans</span><b>每日行程</b><small>時間、照片、交通與定位</small>
+            </button>
+            <button data-go="map">
+                <svg class="ill" viewBox="0 0 64 64" fill="none" stroke="#243C5C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 16l16-5 20 5 16-5v38l-16 5-20-5-16 5z" fill="#FBFDFF"/><path d="M22 11v38M42 16v38"/>
+                    <path d="M11 34c5-2 8 2 13 0" stroke-dasharray="2 4"/><path d="M45 36c3-1 6 0 9-2" stroke-dasharray="2 4"/>
+                    <path d="M32 40s-9-8-9-15a9 9 0 0 1 18 0c0 7-9 15-9 15z" fill="#C0563F"/><circle cx="32" cy="25" r="3" fill="#FBFDFF"/>
+                </svg>
+                <span class="en">Map</span><b>地圖導航</b><small>依天數分色、點兩點算車程</small>
+            </button>
+            <button data-go="wallet">
+                <svg class="ill" viewBox="0 0 64 64" fill="none" stroke="#243C5C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <ellipse cx="30" cy="44" rx="20" ry="6" fill="#A9C8EC"/><path d="M10 44v6c0 3.3 9 6 20 6s20-2.7 20-6v-6" fill="#A9C8EC"/>
+                    <ellipse cx="30" cy="27" rx="14" ry="5" fill="#FBFDFF"/><path d="M22 27h16M25 24l3 6 2-4 2 4 3-6"/>
+                    <path d="M50 12v10M45 17h10"/>
+                </svg>
+                <span class="en">Wallet</span><b>記帳分帳</b><small>自動換算台幣、多退少補</small>
+            </button>
+            <button data-go="spots">
+                <svg class="ill" viewBox="0 0 64 64" fill="none" stroke="#243C5C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M16 6h32v52L32 46 16 58z" fill="#FBFDFF"/>
+                    <path d="M32 34s-10-6-10-12a5 5 0 0 1 10-2 5 5 0 0 1 10 2c0 6-10 12-10 12z" fill="#C0563F" stroke="none"/>
+                </svg>
+                <span class="en">Saved</span><b>備用景點</b><small>收藏想去的地方</small>
+            </button>
+        </div>
+        <button class="tips" data-go="info" data-info="traffic">
+            <svg class="ill" viewBox="0 0 64 64" fill="none" stroke="#243C5C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="10" y="10" width="44" height="38" rx="7" fill="#FBFDFF"/><path d="M10 32h44M20 48v6M44 48v6"/>
+                <circle cx="20" cy="40" r="2.2" fill="#243C5C"/><circle cx="44" cy="40" r="2.2" fill="#243C5C"/><path d="M18 17h28" stroke="#C0563F"/>
+            </svg>
+            <span style="flex:1"><span class="en">Travel Tips</span><b>大眾交通懶人包</b><small>T-Money、必裝 APP、搭公車細節</small></span>
+            <svg class="i" style="width:18px;height:18px;color:#1F4F86"><use href="#i-right"/></svg>
+        </button>
+        <div class="menu">
+            <button data-go="info" data-info="flight"><i class="ic"><svg class="i"><use href="#i-plane"/></svg></i><span><b>航班資訊</b><small>去程／回程，可點擊修改</small></span></button>
+            <button data-go="pack"><i class="ic"><svg class="i"><use href="#i-check"/></svg></i><span><b>行李清單</b><small>冬攀裝備、證件逐項打勾</small></span></button>
+            <button data-go="info" data-info="hotel"><i class="ic"><svg class="i"><use href="#i-bed"/></svg></i><span><b>住宿與公車站</b><small>兩段訂房、飯店周邊站牌</small></span></button>
+            <button data-go="info" data-info="cost"><i class="ic"><svg class="i"><use href="#i-car"/></svg></i><span><b>交通費用比較</b><small>計程車／公車／租車／包車</small></span></button>
+        </div>
+        <p class="note" style="text-align:center;margin:18px var(--gutter) 0"><a href="JEJU.html">開啟經典版整頁手冊 ›</a></p>
+    </section>
+
+    <!-- ========== 行程 ========== -->
+    <section class="view" id="v-plan">
+        <div class="head">
+            <div>
+                <p class="kicker">Itinerary · <em>行程</em></p>
+                <h1 class="title" data-plan-title></h1>
+            </div>
+            <button class="round-btn" data-open="settings" aria-label="設定"><svg class="i"><use href="#i-gear"/></svg></button>
+        </div>
+        <div class="strip" data-strip></div>
+        <div class="card sec theme" data-theme style="margin-top:4px"></div>
+        <div class="stats" data-stats></div>
+        <p class="stats-note">交通花費取自「包車版」方案估價（全組合計）</p>
+        <div class="card sec" data-ex></div>
+        <div class="flow" data-flow></div>
+        <div class="card sec" data-meta></div>
+    </section>
+
+    <!-- ========== 地圖 ========== -->
+    <section class="view" id="v-map">
+        <div class="head">
+            <div>
+                <p class="kicker">Map · <em>行程地圖</em></p>
+                <h1 class="title">Jeju<small>地圖</small></h1>
+            </div>
+        </div>
+        <div class="chips" id="mapChips"></div>
+        <div class="mapbox">
+            <div id="map"></div>
+            <div class="route-tip" id="routeTip"><span id="routeMsg">點任兩個地點，就會畫出路線並估算車程</span><button id="routeClear" hidden>清除</button></div>
+        </div>
+    </section>
+
+    <!-- ========== 記帳 ========== -->
+    <section class="view" id="v-wallet">
+        <div class="head">
+            <div>
+                <p class="kicker">Wallet · <em>旅費</em></p>
+                <h1 class="title">Jeju<small>記帳</small></h1>
+            </div>
+            <button class="round-btn" data-open="settings" aria-label="設定"><svg class="i"><use href="#i-gear"/></svg></button>
+        </div>
+        <div class="wsum" id="wsum"></div>
+        <div class="row-btns">
+            <button class="addbtn" data-open="add"><svg class="i"><use href="#i-plus"/></svg>記一筆</button>
+            <button class="addbtn" data-export style="flex:0 0 auto;padding:15px 18px"><svg class="i"><use href="#i-down"/></svg>匯出 Excel</button>
+        </div>
+        <p class="note" id="wsync" style="margin:10px calc(var(--gutter) + 4px) 0"></p>
+        <div class="card sec" id="wsettle"></div>
+        <div class="card sec" id="wmembers"></div>
+        <div class="card sec" id="wcats"></div>
+        <div class="card sec" id="wlist"></div>
+    </section>
+
+    <!-- ========== 景點 ========== -->
+    <section class="view" id="v-spots">
+        <div class="head">
+            <div>
+                <p class="kicker">Places · <em>景點</em></p>
+                <h1 class="title">Jeju<small>景點</small></h1>
+            </div>
+        </div>
+        <div class="chips" id="spotChips"></div>
+        <div class="grid" id="spotGrid"></div>
+    </section>
+
+    <!-- ========== 行李 ========== -->
+    <section class="view" id="v-pack">
+        <div class="head">
+            <div>
+                <p class="kicker">Packing · <em>行李</em></p>
+                <h1 class="title">Jeju<small>行李</small></h1>
+                <p class="pk-prog" id="pkProg"></p>
+            </div>
+            <button class="round-btn" data-go="home" aria-label="回首頁"><svg class="i"><use href="#i-x"/></svg></button>
+        </div>
+        <div id="pkList"></div>
+        <div class="card sec"><div class="addrow" style="margin:0"><input class="input" id="pkNew" placeholder="新增物品，例如：隱形眼鏡"><button id="pkAdd">加入</button></div></div>
+    </section>
+
+    <!-- ========== 出團資訊 ========== -->
+    <section class="view" id="v-info">
+        <div class="head">
+            <div>
+                <p class="kicker">Travel Info · <em>出團資訊</em></p>
+                <h1 class="title">Jeju<small>資訊</small></h1>
+            </div>
+            <button class="round-btn" data-go="home" aria-label="回首頁"><svg class="i"><use href="#i-x"/></svg></button>
+        </div>
+        <div class="seg-top" id="infoSeg">
+            <button data-info="flight" class="on">航班</button>
+            <button data-info="hotel">住宿</button>
+            <button data-info="cost">費用比較</button>
+            <button data-info="plans">交通方案</button>
+            <button data-info="traffic">大眾交通</button>
+        </div>
+        <div class="info" data-infopane="flight" id="flightPane"></div>
+        <div class="info" data-infopane="cost" id="costPane" hidden></div>
+        <div class="info" data-infopane="hotel" hidden>
+        <h2>🏨 住宿據點 A（新）：Howard Johnson 濟州（하워드존슨 제주 호텔・連洞）</h2>
+        <p class="addr">📍 제주특별자치도 제주시 <b>삼무로 57</b>（連洞／新濟州）　·　座標 33.49008, 126.49260<br>
+        <a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=%ED%95%98%EC%9B%8C%EB%93%9C%EC%A1%B4%EC%8A%A8%20%EC%A0%9C%EC%A3%BC%20%ED%98%B8%ED%85%94" target="_blank" rel="noopener">📍 Google 地圖</a>　
+        <a class="map-link" href="https://map.kakao.com/?q=%ED%95%98%EC%9B%8C%EB%93%9C%EC%A1%B4%EC%8A%A8%20%EC%A0%9C%EC%A3%BC%20%ED%98%B8%ED%85%94" target="_blank" rel="noopener">🗺️ 카카오맵</a></p>
+
+        <div class="hotel-meta">
+            <div>✈️ 濟州機場<br><b>2.9 km・約 6 分</b></div>
+            <div>⛰ 城板岳登山口<br><b>20.9 km・約 29 分</b><br><span style="font-size:11px;color:#64748b">（D3 從西歸浦去，32 分）</span></div>
+            <div>❄️ 1100 高地<br><b>19.8 km・約 22 分</b></div>
+            <div>🌊 西歸浦（D1–D3 住這）<br><b>46 km・約 56 分</b><br><span style="font-size:11px;color:#64748b">600 利木津 ₩5,500／人（NT$127）</span></div>
+        </div>
+        <p class="bus-note">※ 以上為 OSRM 實際道路導航估算的<b>行車</b>距離／時間（包車／計程車同樣適用，未計塞車與冬季路況）。</p>
+
+
+        <div class="booksplit">
+            <h4>🧾 訂房只要兩筆（先南後北・全程只搬一次家）</h4>
+            <table class="bus-table" style="margin-top:8px">
+                <tr><th>段</th><th>日期（2027）</th><th>晚數</th><th>住哪</th><th>為什麼</th></tr>
+                <tr><td class="kr">第 1 段</td><td class="m">1/27 (三) 入住<br>1/30 (六) 退房</td><td class="m"><b>3 晚</b></td><td><b>西歸浦</b>（Bricks Stay 或同級）</td><td>D1 落地即南下、D2 南部一日、D3 城板岳攻頂<br><b>爬山日來回同一間，行李完全不用動</b></td></tr>
+                <tr class="near"><td class="kr">第 2 段</td><td class="m">1/30 (六) 入住<br>2/01 (一) 退房</td><td class="m"><b>2 晚</b></td><td><b>Howard Johnson 濟州連洞</b></td><td>D4 從 1100 高地下來直接北上、D5 濟州市區日<br><b>D6 到機場只要 4 分鐘</b></td></tr>
+            </table>
+            <p class="bus-note" style="margin-top:8px">⚠️ <b>你目前的 Howard Johnson 訂房是 1/27 → 1/30，需要改成 1/30 → 2/01</b>（日期往後移、晚數 3 晚改 2 晚），另外加訂西歸浦 1/27–1/30 三晚。</p>
+            <p class="bus-note">💡 為什麼是「先南後北」：這是所有排法裡唯一同時做到<b>只搬 1 次家、行李宅配 0 次、D6 到機場只要 4 分鐘</b>的組合。全程車程 5.4 小時，比其他「搬一次」的排法都短。</p>
+        </div>
+
+        <h3 style="margin:18px 0 4px;font-size:16px;color:var(--text-strong)">🚌 飯店周邊公車站（實際座標・依距離排序）</h3>
+        <p class="bus-note" style="margin:0 0 8px">綠底＝步行 2 分內。<b>삼무공원（三務公園）站就在飯店門口約 36 m</b>；機場利木津 <b>600 號</b>最近停靠點為 <b>롯데시티호텔(600번)</b>，步行約 5 分。</p>
+        <div style="overflow-x:auto">
+        <table class="bus-table">
+            <tr><th>公車站（韓文／中文）</th><th>距飯店</th><th>方向</th><th>地圖</th></tr>
+                <tr class="near"><td class="kr">삼무공원<br><span style="font-weight:600;color:#64748b">三務公園（飯店正前方）</span></td><td class="m">約 36 m<br>步行 1 分</td><td>往市區／東向</td><td><a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=%EC%82%BC%EB%AC%B4%EA%B3%B5%EC%9B%90%20%EC%A0%9C%EC%A3%BC%EC%8B%9C" target="_blank" rel="noopener">📍 Google</a>　<a class="map-link" href="https://map.kakao.com/?q=%EC%82%BC%EB%AC%B4%EA%B3%B5%EC%9B%90%20%EC%A0%9C%EC%A3%BC%EC%8B%9C" target="_blank" rel="noopener">🗺️ 카카오맵</a></td></tr>
+                <tr class="near"><td class="kr">제주썬호텔<br><span style="font-weight:600;color:#64748b">濟州 Sun Hotel</span></td><td class="m">約 107 m<br>步行 2 分</td><td>東向</td><td><a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=%EC%A0%9C%EC%A3%BC%EC%8D%AC%ED%98%B8%ED%85%94%20%EC%A0%9C%EC%A3%BC%EC%8B%9C" target="_blank" rel="noopener">📍 Google</a>　<a class="map-link" href="https://map.kakao.com/?q=%EC%A0%9C%EC%A3%BC%EC%8D%AC%ED%98%B8%ED%85%94%20%EC%A0%9C%EC%A3%BC%EC%8B%9C" target="_blank" rel="noopener">🗺️ 카카오맵</a></td></tr>
+                <tr class="near"><td class="kr">제주썬호텔<br><span style="font-weight:600;color:#64748b">濟州 Sun Hotel</span></td><td class="m">約 110 m<br>步行 2 分</td><td>西向</td><td><a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=%EC%A0%9C%EC%A3%BC%EC%8D%AC%ED%98%B8%ED%85%94%20%EC%A0%9C%EC%A3%BC%EC%8B%9C" target="_blank" rel="noopener">📍 Google</a>　<a class="map-link" href="https://map.kakao.com/?q=%EC%A0%9C%EC%A3%BC%EC%8D%AC%ED%98%B8%ED%85%94%20%EC%A0%9C%EC%A3%BC%EC%8B%9C" target="_blank" rel="noopener">🗺️ 카카오맵</a></td></tr>
+                <tr class="near"><td class="kr">삼무공원<br><span style="font-weight:600;color:#64748b">三務公園（對向）</span></td><td class="m">約 123 m<br>步行 2 分</td><td>往機場／西向</td><td><a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=%EC%82%BC%EB%AC%B4%EA%B3%B5%EC%9B%90%20%EC%A0%9C%EC%A3%BC%EC%8B%9C" target="_blank" rel="noopener">📍 Google</a>　<a class="map-link" href="https://map.kakao.com/?q=%EC%82%BC%EB%AC%B4%EA%B3%B5%EC%9B%90%20%EC%A0%9C%EC%A3%BC%EC%8B%9C" target="_blank" rel="noopener">🗺️ 카카오맵</a></td></tr>
+                <tr><td class="kr">수협제주도지회<br><span style="font-weight:600;color:#64748b">水協濟州道支會</span></td><td class="m">約 226 m<br>步行 4 分</td><td>東向</td><td><a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=%EC%88%98%ED%98%91%EC%A0%9C%EC%A3%BC%EB%8F%84%EC%A7%80%ED%9A%8C%20%EC%A0%9C%EC%A3%BC%EC%8B%9C" target="_blank" rel="noopener">📍 Google</a>　<a class="map-link" href="https://map.kakao.com/?q=%EC%88%98%ED%98%91%EC%A0%9C%EC%A3%BC%EB%8F%84%EC%A7%80%ED%9A%8C%20%EC%A0%9C%EC%A3%BC%EC%8B%9C" target="_blank" rel="noopener">🗺️ 카카오맵</a></td></tr>
+                <tr><td class="kr">삼무공원<br><span style="font-weight:600;color:#64748b">三務公園（北側）</span></td><td class="m">約 233 m<br>步行 4 分</td><td>—</td><td><a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=%EC%82%BC%EB%AC%B4%EA%B3%B5%EC%9B%90%20%EC%A0%9C%EC%A3%BC%EC%8B%9C" target="_blank" rel="noopener">📍 Google</a>　<a class="map-link" href="https://map.kakao.com/?q=%EC%82%BC%EB%AC%B4%EA%B3%B5%EC%9B%90%20%EC%A0%9C%EC%A3%BC%EC%8B%9C" target="_blank" rel="noopener">🗺️ 카카오맵</a></td></tr>
+                <tr><td class="kr">제원아파트<br><span style="font-weight:600;color:#64748b">濟元公寓（新濟州大站）</span></td><td class="m">約 288 m<br>步行 5 分</td><td>雙向</td><td><a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=%EC%A0%9C%EC%9B%90%EC%95%84%ED%8C%8C%ED%8A%B8%20%EC%A0%9C%EC%A3%BC%EC%8B%9C" target="_blank" rel="noopener">📍 Google</a>　<a class="map-link" href="https://map.kakao.com/?q=%EC%A0%9C%EC%9B%90%EC%95%84%ED%8C%8C%ED%8A%B8%20%EC%A0%9C%EC%A3%BC%EC%8B%9C" target="_blank" rel="noopener">🗺️ 카카오맵</a></td></tr>
+                <tr><td class="kr">롯데시티호텔(600번)<br><span style="font-weight:600;color:#64748b">樂天 City Hotel〔600 機場利木津〕</span></td><td class="m">約 340 m<br>步行 5 分</td><td>600 專用站</td><td><a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=%EB%A1%AF%EB%8D%B0%EC%8B%9C%ED%8B%B0%ED%98%B8%ED%85%94%28600%EB%B2%88%29%20%EC%A0%9C%EC%A3%BC%EC%8B%9C" target="_blank" rel="noopener">📍 Google</a>　<a class="map-link" href="https://map.kakao.com/?q=%EB%A1%AF%EB%8D%B0%EC%8B%9C%ED%8B%B0%ED%98%B8%ED%85%94%28600%EB%B2%88%29%20%EC%A0%9C%EC%A3%BC%EC%8B%9C" target="_blank" rel="noopener">🗺️ 카카오맵</a></td></tr>
+                <tr><td class="kr">삼무공원사거리/롯데시티호텔<br><span style="font-weight:600;color:#64748b">三務公園十字路口／樂天 City</span></td><td class="m">約 342 m<br>步行 5 分</td><td>雙向</td><td><a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=%EC%82%BC%EB%AC%B4%EA%B3%B5%EC%9B%90%EC%82%AC%EA%B1%B0%EB%A6%AC/%EB%A1%AF%EB%8D%B0%EC%8B%9C%ED%8B%B0%ED%98%B8%ED%85%94%20%EC%A0%9C%EC%A3%BC%EC%8B%9C" target="_blank" rel="noopener">📍 Google</a>　<a class="map-link" href="https://map.kakao.com/?q=%EC%82%BC%EB%AC%B4%EA%B3%B5%EC%9B%90%EC%82%AC%EA%B1%B0%EB%A6%AC/%EB%A1%AF%EB%8D%B0%EC%8B%9C%ED%8B%B0%ED%98%B8%ED%85%94%20%EC%A0%9C%EC%A3%BC%EC%8B%9C" target="_blank" rel="noopener">🗺️ 카카오맵</a></td></tr>
+                <tr><td class="kr">연동한일시티파크<br><span style="font-weight:600;color:#64748b">蓮洞韓一 City Park</span></td><td class="m">約 345 m<br>步行 5 分</td><td>雙向</td><td><a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=%EC%97%B0%EB%8F%99%ED%95%9C%EC%9D%BC%EC%8B%9C%ED%8B%B0%ED%8C%8C%ED%81%AC%20%EC%A0%9C%EC%A3%BC%EC%8B%9C" target="_blank" rel="noopener">📍 Google</a>　<a class="map-link" href="https://map.kakao.com/?q=%EC%97%B0%EB%8F%99%ED%95%9C%EC%9D%BC%EC%8B%9C%ED%8B%B0%ED%8C%8C%ED%81%AC%20%EC%A0%9C%EC%A3%BC%EC%8B%9C" target="_blank" rel="noopener">🗺️ 카카오맵</a></td></tr>
+                <tr><td class="kr">제주도청 신제주로터리<br><span style="font-weight:600;color:#64748b">濟州道廳・新濟州圓環</span></td><td class="m">約 376 m<br>步行 6 分</td><td>雙向</td><td><a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=%EC%A0%9C%EC%A3%BC%EB%8F%84%EC%B2%AD%20%EC%8B%A0%EC%A0%9C%EC%A3%BC%EB%A1%9C%ED%84%B0%EB%A6%AC%20%EC%A0%9C%EC%A3%BC%EC%8B%9C" target="_blank" rel="noopener">📍 Google</a>　<a class="map-link" href="https://map.kakao.com/?q=%EC%A0%9C%EC%A3%BC%EB%8F%84%EC%B2%AD%20%EC%8B%A0%EC%A0%9C%EC%A3%BC%EB%A1%9C%ED%84%B0%EB%A6%AC%20%EC%A0%9C%EC%A3%BC%EC%8B%9C" target="_blank" rel="noopener">🗺️ 카카오맵</a></td></tr>
+                <tr><td class="kr">신광사거리<br><span style="font-weight:600;color:#64748b">新光十字路口</span></td><td class="m">約 401 m<br>步行 6 分</td><td>雙向</td><td><a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=%EC%8B%A0%EA%B4%91%EC%82%AC%EA%B1%B0%EB%A6%AC%20%EC%A0%9C%EC%A3%BC%EC%8B%9C" target="_blank" rel="noopener">📍 Google</a>　<a class="map-link" href="https://map.kakao.com/?q=%EC%8B%A0%EA%B4%91%EC%82%AC%EA%B1%B0%EB%A6%AC%20%EC%A0%9C%EC%A3%BC%EC%8B%9C" target="_blank" rel="noopener">🗺️ 카카오맵</a></td></tr>
+                <tr><td class="kr">연동주민센터<br><span style="font-weight:600;color:#64748b">蓮洞住民中心</span></td><td class="m">約 410 m<br>步行 6 分</td><td>雙向</td><td><a class="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=%EC%97%B0%EB%8F%99%EC%A3%BC%EB%AF%BC%EC%84%BC%ED%84%B0%20%EC%A0%9C%EC%A3%BC%EC%8B%9C" target="_blank" rel="noopener">📍 Google</a>　<a class="map-link" href="https://map.kakao.com/?q=%EC%97%B0%EB%8F%99%EC%A3%BC%EB%AF%BC%EC%84%BC%ED%84%B0%20%EC%A0%9C%EC%A3%BC%EC%8B%9C" target="_blank" rel="noopener">🗺️ 카카오맵</a></td></tr>
+        </table>
+        </div>
+        <p class="bus-note">⚠️ <b>路線號碼與時刻請以 카카오맵／Naver 地圖或 <a href="https://bus.jeju.go.kr/" target="_blank" rel="noopener">bus.jeju.go.kr</a> 即時查詢為準</b>——上表的站名與座標已核實（OpenStreetMap），但各站的「經過路線清單」無法從公開來源穩定取得，故不列號碼以免誤導。唯一已標註的是 600 機場利木津的專用站。</p>
+    </div>
+        <div class="info" data-infopane="plans" hidden>
+    <div class="plantabs">
+        <button data-plan="car" class="active">🚕 包車版</button>
+        <button data-plan="hybrid">🚌🚕 市區公車＋郊區包車</button>
+        <button data-plan="mix">🚕🚌 計程車版</button>
+        <button data-plan="bus">🚌 公車版</button>
+    </div>
+
+    <!-- 包車版 -->
+    <div class="planpanel show" id="plan-car">
+        <h3>🚕 包車＋計程車版（不開車・最省力）👍 建議首選</h3>
+        <p class="plan-tag">不租車。把「包車」用在散點多、班次差、又要載行李的兩天（D4・D5），其餘天用 Kakao Taxi／公車即可。</p>
+
+        <div class="plan-block"><b>🏨 住宿：先南後北，只搬 1 次（共 5 晚・訂 2 筆）</b></div>
+        <table class="plan-nights">
+            <tr><th>晚（2027）</th><th>住宿</th><th>區域</th></tr>
+            <tr><td>D1・D2・D3<br><span style="color:#be123c;font-size:12px;font-weight:700">1/27 入住<br>1/30 退房・3 晚</span></td><td>西歸浦（Bricks Stay 或同級）<br><span style="color:#64748b;font-size:12px">爬山日來回同一間，行李不動</span></td><td>南・西歸浦市區</td></tr>
+            <tr><td>D4・D5<br><span style="color:#1d4ed8;font-size:12px;font-weight:700">1/30 入住<br>2/01 退房・2 晚</span></td><td><b>Howard Johnson 濟州連洞</b><br><span style="color:#64748b;font-size:12px">삼무로 57・備案 Urbanstay</span></td><td>北・濟州市（到機場 4 分）</td></tr>
+        </table>
+
+        <div class="plan-block"><b>🔑 重點動線（先南後北・只搬 1 次家）</b><br>
+            <b>D1 1/27</b> 落地 → 機場旁午餐 → <u>在濟州市租好冰爪登山杖</u> → 搭 <b>600 利木津</b>南下西歸浦（₩5,500／人・NT$127，80 分）。<br>
+            <b>D2 1/28 → 半日包車即可</b>：<u>攻頂前的調整日，刻意排最輕</u>。偶來市場步行可達，只有冬柏森林要車（來回 25 分）。<br>
+            <b>D3 1/29 爬山日</b>：<u>不包車</u>——車要空等 5 小時太浪費。搭 <b>281 番</b>從西歸浦上城板岳，下山原車回西歸浦。<b>住同一間，行李整天不用動、也不用行李宅配。</b><br>
+            <b>D4 1/30 → 全日包車 9 小時（最重要的一天）</b>：山房山碳酸溫泉（<u>鐵腿救星，爬完山隔天泡</u>）→ 橘花咖啡 → 1100 高地 → E-MART → 行李直接載到 Howard Johnson。<b>恢復、雪景、搬家一次解決。</b><br>
+            <b>D5 1/31</b> 濟州市區日：吾羅洞叫車、東門市場與樹木園走公車。<br>
+            <b>D6 2/01</b> 飯店 → 機場僅 2.6 km、約 4 分，₩4,900（NT$113 全車），早班機零壓力。
+        </div>
+
+        <div class="plan-block"><b>💰 包車行情（2026 年參考）</b><br>
+            KKday 濟州包車 <b>9 小時／6 座／中文司機約 ₩275,000</b>（≈ <b>NT$6,320，整台車</b>，3 人均攤每人 NT$2,107）；Trip.com 7 人座 8 小時約 <b>NT$7,300／台</b>。<br><b>包車是「按車計價」，坐 1 人或 6 人同價</b>——人越多每人越便宜。<br>
+            <span style="color:#64748b;font-size:13px">※ 一般服務時間 08:00–20:00，超時另計；跨區（環島）常見加價 ₩60,000（≈ NT$1,380）；門票、停車費、司機餐費依業者規定自付。</span>
+        </div>
+
+        <div style="overflow-x:auto">
+        <table class="bus-table">
+            <tr><th>天</th><th>用什麼</th><th>估價<br><span style="font-weight:600">🚌 公車＝按人（已 ×3）　🚕 計程車／包車＝整台車</span></th><th>理由</th></tr>
+            <tr><td class="kr">D1 1/27</td><td>計程車＋<b>600 利木津</b></td><td class="m">₩4,300 全車＋₩5,500／人 ×3<br>≈ ₩20,800 ≈ NT$478<br><span style="font-weight:400">每人 NT$159</span></td><td>機場→西歸浦叫車要 ₩44,600，利木津只要 ₩16,500，還有行李艙</td></tr>
+            <tr><td class="kr">D2 1/28</td><td>計程車（<u>不必包車</u>）</td><td class="m">≈ ₩27,600 全車<br>≈ NT$634<br><span style="font-weight:400">每人 NT$211</span></td><td><b>攻頂前調整日</b>：偶來市場步行可達，只有冬柏森林要車，車程整天 26 分</td></tr>
+            <tr><td class="kr">D3 1/29</td><td>公車 <b>281 番</b>來回</td><td class="m">₩1,200／人 ×2 趟 ×3 人<br>≈ ₩7,200 ≈ NT$166<br><span style="font-weight:400">每人 NT$55</span></td><td>爬山日包車＝空等 5 小時，不划算</td></tr>
+            <tr class="near"><td class="kr">D4 1/30</td><td><b>全日包車 9 小時</b><br><span style="font-weight:400">全程唯一必包的一天</span></td><td class="m">≈ ₩275,000 整台車<br>≈ NT$6,320<br><span style="font-weight:400">每人 NT$2,107</span></td><td>山房山（最西）→1100 高地（中央山區）→連洞，跨半個島；冬季 1100 難叫車，行李還要一路載到連洞</td></tr>
+            <tr><td class="kr">D5 1/31</td><td>公車＋計程車</td><td class="m">≈ ₩29,200 ≈ NT$671<br><span style="font-weight:400">每人 NT$224</span></td><td>吾羅洞沒公車必叫車；東門市場、樹木園走公車</td></tr>
+            <tr><td class="kr">D6 2/01</td><td>計程車</td><td class="m">≈ ₩4,900 全車<br>≈ NT$113（每人 NT$38）</td><td>飯店→機場 2.6 km</td></tr>
+            <tr><td class="kr"><b>合計</b></td><td>包車只需 <b>1 天</b></td><td class="m"><b>≈ ₩364,700 全組合計<br>≈ NT$8,384<br>3 人均攤 ≈ NT$2,795／人</b></td><td><b>行李宅配 0 次</b>；比原本兩天包車再省 NT$1,896／人</td></tr>
+        </table>
+        </div>
+
+        <div class="plan-pros">
+            <div class="pro"><b>優點</b><br>不用開車、不用國際駕照、冬季山路交給在地司機；D4／D5 行李與動線完全不用煩惱；可要中文司機</div>
+            <div class="con"><b>缺點</b><br>兩天包車費用是整趟交通的大宗；包車有時間上限（超時加價）；行程要事先講清楚，臨時改點可能加價</div>
+        </div>
+    </div>
+
+
+    <!-- 市區公車＋郊區包車 -->
+    <div class="planpanel" id="plan-hybrid">
+        <h3>🚌🚕 市區公車＋郊區包車（省錢槓桿）</h3>
+        <p class="plan-tag">原則：<b>市區內走公車</b>，<b>出了市區、班次差或要載行李的日子叫包車</b>。這一頁在算的是——<b>到底要包幾天車</b>。</p>
+
+        <div class="plan-block"><b>🏨 住宿：先南後北，只搬 1 次（共 5 晚・訂 2 筆）</b></div>
+        <table class="plan-nights">
+            <tr><th>晚（2027）</th><th>住宿</th><th>區域</th></tr>
+            <tr><td>D1・D2・D3<br><span style="color:#be123c;font-size:12px;font-weight:700">1/27 入住<br>1/30 退房・3 晚</span></td><td>西歸浦（Bricks Stay 或同級）<br><span style="color:#64748b;font-size:12px">爬山日來回同一間，行李不動</span></td><td>南・西歸浦市區</td></tr>
+            <tr><td>D4・D5<br><span style="color:#1d4ed8;font-size:12px;font-weight:700">1/30 入住<br>2/01 退房・2 晚</span></td><td><b>Howard Johnson 濟州連洞</b><br><span style="color:#64748b;font-size:12px">삼무로 57・備案 Urbanstay</span></td><td>北・濟州市（到機場 4 分）</td></tr>
+        </table>
+
+        <div class="plan-block"><b>🔑 一句話分界</b><br>
+            <b>市區＝公車</b>：連洞↔東門市場↔漢拏樹木園、西歸浦偶來市場，都在公車網內，班次密。<br>
+            <b>郊區＝包車</b>：山房山溫泉、冬柏森林、1100 高地、吾羅洞——沒有公車或班次以「小時」計，冬季傍晚還叫不到計程車。<br>
+            <b>兩個例外</b>：① <b>D1 機場→西歸浦一定搭 600 利木津</b>（₩5,500／人 ×3 ＝ ₩16,500・NT$380，叫車要 ₩44,600・NT$1,025）；② <b>D6 連洞→機場一定叫車</b>（全車 ₩4,900，只要 4 分鐘）。
+        </div>
+
+        <div class="plan-block" style="border-left-color:var(--orange);background:#fff7ed"><b>⚠️ 先講結論：市區改公車省不到什麼，包車天數才是關鍵</b><br>
+            市區那幾趟公車跟叫車的差距只有幾百塊台幣，<b>但一天包車就是 NT$6,320</b>。所以真正的選擇只有一個問題：<b>D2（南部一日）和 D4（1100 高地＋搬家）要包幾天？</b>
+        </div>
+
+        <div style="overflow-x:auto">
+        <table class="bus-table">
+            <tr><th>組合</th><th>包車</th><th>車資（全組）</th><th>行李宅配</th><th>合計（全組）</th><th>每人<br>（3 人均攤）</th><th>代價</th></tr>
+            <tr><td class="kr">A：D2＋D4 都包</td><td class="m">2 天</td><td class="m">₩612,100<br>NT$14,072</td><td class="m"><b>0 次</b><br>₩0</td><td class="m">≈ ₩612,100<br><b>≈ NT$14,072</b></td><td class="m"><b>NT$4,691</b></td><td>最省力、零風險，行李完全不用煩惱</td></tr>
+            <tr class="near"><td class="kr"><b>B：只包 D2</b><br>D4 改 240 番公車</td><td class="m">1 天</td><td class="m">₩348,300<br>NT$8,007</td><td class="m">D4 一次<br>₩45,000<br>NT$1,035</td><td class="m">≈ ₩393,300<br><b>≈ NT$9,042</b></td><td class="m"><b>NT$3,014</b></td><td>D4 綁死 240 班距，行李要走宅配</td></tr>
+            <tr><td class="kr">C：完全不包車<br>（全程叫車）</td><td class="m">0 天</td><td class="m">₩257,600<br>NT$5,921</td><td class="m"><b>0 次</b><br>₩0</td><td class="m">≈ ₩257,600<br><b>≈ NT$5,921</b></td><td class="m"><b>NT$1,974</b></td><td>山房山、冬柏、1100 有叫不到車卡住的風險</td></tr>
+        </table>
+        </div>
+        <p class="bus-note">🧳 行李宅配以 <b>3 件 × ₩15,000（NT$345／件）＝ ₩45,000（NT$1,035）</b>估算，實際 ₩10,000–20,000／件（NT$230–460）。<b>宅配按「件」計費，不是按人。</b><br>
+        <b>注意 A 和 C 都是 0 次宅配</b>——因為先南後北只搬一次家，而那次搬家發生在 D4：有包車就放車上、全程叫車也能放後車廂。<b>只有 B 案（D4 搭公車）才需要宅配</b>，這也吃掉了它省下來的一部分。</p>
+
+        <details class="plan-details" style="margin-top:14px;border-left-color:#16a34a">
+            <summary>💰 展開：B 案「只包 D2」的 D4 怎麼走（每人 NT$3,014）— 點我</summary>
+            <div style="padding:0 14px 14px">
+                <p class="bus-note" style="margin-top:0">跟 A 案唯一的差別是 <b>D4 不包車，改搭 240 番雪景巴士</b>，行李另走宅配。省下 ₩275,000（NT$6,320）的包車費，實拿約 <b>NT$1,677／人</b>。</p>
+
+                <div class="plan-block bus" style="margin-top:10px"><b>🚌 240 番（雪景巴士）冬季班次——這是 D4 的骨架</b><br>
+                    <b>中文發車 09:10–17:00</b>／濟州總站首班 07:30、末班 15:20／<b>班距 50–90 分</b>／中文↔1100 高地約 40–50 分／1100↔濟州市約 1 小時。<br>
+                    <span style="color:#be123c;font-weight:700">⚠️ 一天只有數班，錯過一班就等一小時以上，山上沒有其他車可搭。出發前務必用 Naver 或 bus.jeju.go.kr 對當日實際班表。</span>
+                </div>
+
+                <div style="overflow-x:auto">
+                <table class="bus-table">
+                    <tr><th>時間</th><th>行程</th><th>怎麼移動</th><th>費用<br><span style="font-weight:600">🚌 公車按人・🚕 計程車按車</span></th></tr>
+                    <tr><td class="m">08:00</td><td>西歸浦退房、<b>行李交宅配</b> → 送到 Howard Johnson</td><td>🧳 짐 배송（前一天預約）</td><td class="m">≈ ₩45,000 ≈ NT$1,035<br><span style="font-weight:400">3 件 × ₩15,000</span></td></tr>
+                    <tr><td class="m">08:30–09:10</td><td>西歸浦 → 中文（14.6 km）</td><td>🚌 市區公車／600</td><td class="m">₩1,200／人 ×3 人<br>= ₩3,600 ≈ NT$83</td></tr>
+                    <tr><td class="m">09:20–10:20</td><td>☕ 橘花閣樓咖啡 귤꽃다락<br><span style="color:#be123c">※ 在中文以北約 2 km，公車不直達</span></td><td>🚶／🚕 短程</td><td class="m">₩4,300 全車 ≈ NT$99</td></tr>
+                    <tr class="near"><td class="m">10:40</td><td><b>中文搭 240 番上山</b></td><td>🚌 240（40–50 分）</td><td class="m">₩1,200／人 ×3 人<br>= ₩3,600 ≈ NT$83</td></tr>
+                    <tr><td class="m">11:30–13:30</td><td>❄️ <b>漢拏山 1100 高地</b>：冰晶樹海、白鹿雕像、木棧道濕地</td><td>🚶 步行</td><td class="m">—</td></tr>
+                    <tr class="near"><td class="m">13:40</td><td><b>1100 高地搭 240 下山往濟州市</b><br><span style="color:#be123c">⚠️ 全天最關鍵的一班，錯過要在零下等 50–90 分</span></td><td>🚌 240（約 1 小時）</td><td class="m">₩1,200／人 ×3 人<br>= ₩3,600 ≈ NT$83</td></tr>
+                    <tr><td class="m">15:00–16:30</td><td>🛒 E-MART 新濟州店掃貨、歸還冰爪登山杖</td><td>🚌 市區公車／🚕</td><td class="m">₩4,300 全車 ≈ NT$99</td></tr>
+                    <tr><td class="m">17:00</td><td>🏨 Howard Johnson 入住（行李已先送到）</td><td>🚌 삼무공원站步行 1 分</td><td class="m">₩1,200／人 ×3 人<br>= ₩3,600 ≈ NT$83</td></tr>
+                    <tr><td class="m">19:00</td><td>🍖 蓮洞商圈烤肉定食</td><td>🚶 步行</td><td class="m">—</td></tr>
+                    <tr><td class="kr"><b>D4 小計</b></td><td>—</td><td>—</td><td class="m"><b>≈ ₩68,000 ≈ NT$1,563</b><br><span style="font-weight:400">含行李宅配；每人約 NT$521</span></td></tr>
+                </table>
+                </div>
+
+                <div class="plan-pros" style="margin-top:12px">
+                    <div class="pro"><b>省下什麼</b><br>D4 包車費 ₩275,000（NT$6,320，整台車）全省 → 每人從 NT$4,691 降到 <b>NT$3,014</b>，<b>省 NT$1,677／人</b></div>
+                    <div class="con"><b>付出什麼</b><br>① 整天綁死 240 班次，13:40 那班錯過就是零下等 50–90 分<br>② 多一次行李宅配 ₩45,000（NT$1,035），要前一天預約<br>③ 橘花閣樓咖啡不在公車線上，得叫車或換成中文區的咖啡廳<br>④ 1100 高地停留時間被班次切死</div>
+                </div>
+
+                <p class="bus-note">🎯 <b>我的建議</b>：D4 同時是「1100 高地」和「搬家日」兩件事疊在一起，包車一次解決兩個問題。如果 1100 高地的雪景是這趟的重點畫面，多花 NT$1,677 買確定性是值得的——冬季山上錯過一班車的代價不是錢，是體感零下的一小時。</p>
+            </div>
+        </details>
+
+        <div class="plan-pros">
+            <div class="pro"><b>優點</b><br>市區段最省、郊區段零風險；先南後北只搬一次家，A 案連行李宅配都不用；不需要國際駕照</div>
+            <div class="con"><b>缺點</b><br>市區改公車省的有限；D5 吾羅洞、D3 爬山日仍得自己接駁；市區公車全韓文</div>
+        </div>
+    </div>
+
+    <!-- 計程車＋公車版 -->
+    <div class="planpanel" id="plan-mix">
+        <h3>🚕🚌 純計程車＋公車版（最省錢）</h3>
+        <p class="plan-tag">完全不包車，全部用 Kakao Taxi／Uber 點對點，班次好的路段改搭公車。省最多錢，但偏遠點有「叫不到車」的風險。</p>
+
+        <div class="plan-block"><b>🏨 住宿：先南後北，只搬 1 次（共 5 晚・訂 2 筆）</b></div>
+        <table class="plan-nights">
+            <tr><th>晚（2027）</th><th>住宿</th><th>區域</th></tr>
+            <tr><td>D1・D2・D3<br><span style="color:#be123c;font-size:12px;font-weight:700">1/27 入住<br>1/30 退房・3 晚</span></td><td>西歸浦（Bricks Stay 或同級）<br><span style="color:#64748b;font-size:12px">爬山日來回同一間，行李不動</span></td><td>南・西歸浦市區</td></tr>
+            <tr><td>D4・D5<br><span style="color:#1d4ed8;font-size:12px;font-weight:700">1/30 入住<br>2/01 退房・2 晚</span></td><td><b>Howard Johnson 濟州連洞</b><br><span style="color:#64748b;font-size:12px">삼무로 57・備案 Urbanstay</span></td><td>北・濟州市（到機場 4 分）</td></tr>
+        </table>
+
+        <div class="plan-block"><b>🚕 濟州計程車費率（濟州道政府公告，2024/07/01 起）</b><br>
+            中型車 基本 <b>₩4,300／2 km（≈ NT$99）</b>，之後 <b>每 126 m ₩100（≈ NT$2.3）</b>；時速 15 km 以下改以 <b>31 秒 ₩100</b> 計。<br>
+            <b>深夜 23:00–04:00 加成 20%</b>；<b>超過 20 km 的部分</b>每 126 m 改收 ₩120；電話叫車加 ₩1,000（NT$23）。<b>計程車是全車計費，3 人同乘不加價。</b><br>
+            <a class="map-link" href="https://jeju.go.kr/traffic/bus/taxifee.htm" target="_blank" rel="noopener">🔗 官方費率表</a>
+        </div>
+
+        <div style="overflow-x:auto">
+        <table class="bus-table">
+            <tr><th>天</th><th>路線</th><th>里程</th><th>車資估算<br><span style="font-weight:600">計程車＝跳表，<b>全車一價</b>，3 人不加價</span></th></tr>
+            <tr><td class="kr">D1 1/27</td><td>機場→瑞宇→<b>西歸浦</b></td><td class="m">48.2 km</td><td class="m">≈ ₩48,900 ≈ NT$1,124　<span style="font-weight:400">（每人 NT$375）</span><br><span style="color:#be123c;font-weight:700">⚠️ 這段改搭 600 利木津只要 ₩16,500（NT$380）</span></td></tr>
+            <tr><td class="kr">D2 1/28</td><td>西歸浦→偶來市場→冬柏森林→西歸浦<br><span style="color:#64748b;font-size:12px">攻頂前調整日，刻意排最輕</span></td><td class="m">22.7 km</td><td class="m">≈ ₩27,600 ≈ NT$634　<span style="font-weight:400">（每人 NT$211）</span></td></tr>
+            <tr><td class="kr">D3 1/29</td><td>西歸浦→城板岳→西歸浦</td><td class="m">41.3 km</td><td class="m">≈ ₩38,600 ≈ NT$887　<span style="font-weight:400">（每人 NT$296）</span></td></tr>
+            <tr><td class="kr">D4 1/30</td><td>西歸浦→<b>山房山溫泉</b>→橘花→1100→E-MART→連洞<br><span style="color:#64748b;font-size:12px">恢復＋雪景＋搬家一次解決</span></td><td class="m">77.1 km</td><td class="m">≈ ₩76,100 ≈ NT$1,749　<span style="font-weight:400">（每人 NT$583）</span></td></tr>
+            <tr><td class="kr">D5 1/31</td><td>連洞→吾羅洞→三代麵條→東門市場→樹木園→連洞</td><td class="m">26.9 km</td><td class="m">≈ ₩36,100 ≈ NT$830　<span style="font-weight:400">（每人 NT$277）</span></td></tr>
+            <tr><td class="kr">D6 2/01</td><td>連洞→機場</td><td class="m">2.6 km</td><td class="m">≈ ₩4,900 ≈ NT$113　<span style="font-weight:400">（每人 NT$38）</span></td></tr>
+            <tr class="near"><td class="kr"><b>合計</b></td><td>六天全叫車</td><td class="m">248 km</td><td class="m"><b>≈ ₩258,300 全組合計<br>≈ NT$5,938<br>3 人均攤 ≈ NT$1,979／人</b></td></tr>
+        </table>
+        </div>
+        <p class="bus-note">※ 里程為 OSRM 實際道路導航計算，車資依上述官方費率試算（未計塞車的時間運價、深夜加成與叫車費），以 <b>₩1,000 ≈ NT$23.0</b> 換算（2026/08/31 匯率 1 KRW = 0.02299 TWD）。實際以跳表為準。</p>
+
+        <div class="plan-block bus"><b>⚠️ 四個「可能叫不到車」的點——請改搭公車或改包車</b><br>
+            <b>城板岳</b>（D3）→ 281 番幹線，西歸浦↔城板岳約 32 分<br>
+            <b>1100 高地</b>（D4）→ 240 番雪景巴士，冬季總站首班 07:30、50–90 分一班<br>
+            <b>冬柏森林</b>（D2）→ 181 急行到南元邑事務所再叫車<br>
+            <b>山房山溫泉</b>（D4）→ 西部路線需轉乘，班次少<br>
+            <span style="color:#64748b">這四點在山區或郊外，冬季傍晚 Kakao Taxi 常常沒有司機接單——這正是上一個方案把 D2・D4 改成包車的原因。</span>
+        </div>
+
+        <div class="plan-pros">
+            <div class="pro"><b>優點</b><br>最省錢（約包車版的三分之一）、完全按需叫車、想改行程隨時改</div>
+            <div class="con"><b>缺點</b><br>偏遠點叫不到車就卡住；語言溝通靠 App；D4 長程叫車一趟就 ₩25,000–34,000（NT$575–780）</div>
+        </div>
+    </div>
+
+    <!-- 公車版 -->
+    <div class="planpanel" id="plan-bus">
+        <h3>🚌 公車版（最省・不開車）</h3>
+        <p class="plan-tag">全程公車＋計程車。建議「單一北部據點」不換旅館，南部當天來回。</p>
+
+        <div class="plan-block bus"><b>🏨 住宿：單一北部據點（共 5 晚）</b><br>D1–D5 全住<b>機場／蓮洞</b>周邊（<b>Howard Johnson 濟州連洞</b>，門口即 삼무공원 站），不搬家、D6 機場最近。<br><span style="color:#be123c">⚠️ 但本行程已改採「先南後北」：南部連住 3 晚＋連洞 2 晚，只搬一次家且行李宅配 0 次，比全住北部少開 1.8 小時。</span><br><span style="color:#64748b">※ 若仍想南部過夜，則改雙據點＋D3 用「行李宅配（짐 배송）」把行李送到西歸浦民宿。</span></div>
+
+        <div class="plan-block bus"><b>⛰ D3 爬山日（最方便搭公車）</b><br>先南後北的排法讓爬山日<b>從西歸浦出發、回西歸浦</b>：<b>281 番</b>西歸浦↔城板岳約 32 分，來回 ₩1,200／人 ×2 ×3 人＝₩7,200（NT$166）。<br>住同一間旅館，<b>行李整天不用動，也不需要行李宅配</b>。<br>想更早更彈性：計程車 西歸浦→城板岳 約 ₩19,300（NT$444，<b>全車</b>）。</div>
+
+        <details class="plan-details">
+            <summary>🚌 公車路線速查（號碼・班次）— 點我展開</summary>
+            <div style="overflow-x:auto">
+        <table class="plan-nights">
+            <tr><th>路段</th><th>公車</th><th>首／末班・班距</th><th>備註</th></tr>
+            <tr><td>機場 ⇄ 蓮洞／新濟州<br><span style="color:#64748b;font-size:12px">飯店最近站：제주썬호텔（107 m）<br>삼무공원사거리/롯데시티호텔（340 m）</span></td><td><b>600</b> 機場利木津<br>或一般市區公車</td><td>約 18–30 分一班</td><td><b>600 為分段計費的利木津，按人收費</b><br>已確認：機場→중문 <b>₩4,500／人（NT$104）</b>、機場→서귀포 <b>₩5,500／人（NT$127）</b><br>機場→新濟州（連洞）為最短段，官方未明列票價，實際以現場刷卡為準<br>一般市區公車約 ₩1,200／人（NT$28）<br><span style="color:#64748b">首班 06:00／末班 22:40・約 20 分一班<br>到중문約 50 分、到서귀포約 80 分</span><br><span style="color:#be123c;font-weight:700">⚠️ <b>短程別搭 600</b>：利木津即使最短段也遠高於市區公車，3 人份加起來明顯超過計程車全車的 ₩4,900（NT$113）——機場↔連洞帶行李直接叫車。<br><b>但要去西歸浦時 600 最划算</b>：₩5,500／人 ×3 ＝ ₩16,500（NT$380），計程車同段要 ₩45,000 上下。</span></td></tr>
+            <tr><td>濟州市 ⇄ 城板岳 ⇄ 西歸浦<br>（D3 漢拏山・西歸浦↔城板岳）</td><td><b>281</b> 幹線<br>（181 急行更快）</td><td>市廳首班 05:55／總站 06:00；末班約 21:30–22:00</td><td>約 35–45 分到城板岳</td></tr>
+            <tr><td>濟州市 ⇄ 1100 高地 ⇄ 中文<br>（D4 雪景）</td><td><b>240</b> 雪景巴士</td><td>冬季 總站首班 07:30・末班 15:20；中文發 09:10–17:00；<b>50–90 分一班</b></td><td>約 1 小時到 1100；中途經漢拿樹木園（D2）</td></tr>
+            <tr><td>冬柏森林 동백포레스트<br>（D2）</td><td><b>181</b> 急行 → 南元邑事務所<br>再轉計程車</td><td>依 181 班次</td><td>班次稀、下車要叫車</td></tr>
+            <tr><td>山房山碳酸溫泉（D2）</td><td>西部路線（經和順／<br>慕瑟浦）需轉乘</td><td>班次少</td><td>較耗時，建議排包車日</td></tr>
+            <tr><td>偶來市場（D2）</td><td>西歸浦市區步行／市區公車</td><td>—</td><td>市場在市區、步行可達</td></tr>
+        </table>
+            </div>
+        </details>
+        <div class="plan-block bus"><b>⚠️ 公車弱點</b><br>山房山溫泉、冬柏森林、1100 高地、吾羅洞秘境 班次少、需轉乘或叫車——這幾點正是「混合版」建議用車的時段。</div>
+
+        <div class="plan-pros">
+            <div class="pro"><b>優點</b><br>最省錢、不用搶停車位、不換旅館、攻頂日不用顧車</div>
+            <div class="con"><b>缺點</b><br>D4 南部一日來回較長、部分景點班次受限、清晨首班 06:00 才有</div>
+        </div>
+    </div>
+
+    <p class="map-sub" style="margin-top:12px">※ 公車路線與時刻請以 카카오맵／Naver 地圖即時查詢為準。　👉 <a class="map-link" href="#traffic101">車資、T-Money、APP、觀光巴士等實用資訊看這裡</a></p>
+    
+</div>
+        <div class="info" data-infopane="traffic" hidden>
+        <h2>🚌 濟州島大眾交通．實用資訊懶人包</h2>
+        <p class="addr">濟州島<b>沒有地鐵或捷運</b>，大眾運輸只有公車與客運。以下整理適用於本行程的<b>包車版與計程車版</b>——尤其是計程車、Naver／Kakao APP 與 T-Money 三段。</p>
+
+        <div class="t-grid">
+            <div class="t-card">
+                <h4>💳 車資與付款</h4>
+                <ul>
+                    <li>公車單趟約 <b>NT$30–130</b>（依距離）</li>
+                    <li>可付現金，但用 <b>T-Money 卡</b>刷卡較便宜</li>
+                    <li><b>上車、下車都要刷卡</b>（沒刷下車會被算全程）</li>
+                    <li>T-Money 可在<b>桃園機場</b>先領好再出發</li>
+                </ul>
+            </div>
+            <div class="t-card">
+                <h4>📱 必裝 APP</h4>
+                <ul>
+                    <li><b>Naver Map</b>＝韓國版 Google Map，公車路線／班次一律查它<br>
+                        <a class="map-link" href="https://apps.apple.com/us/app/%EB%84%A4%EC%9D%B4%EB%B2%84-naver/id393499958" target="_blank" rel="noopener">iOS</a>　
+                        <a class="map-link" href="https://play.google.com/store/apps/details?id=com.nhn.android.search" target="_blank" rel="noopener">Android</a></li>
+                    <li>叫車：<b>Uber</b>（到韓國會自動變韓國車隊）或 <b>Kakao Taxi</b>，也可請飯店櫃檯代叫</li>
+                </ul>
+            </div>
+            <div class="t-card">
+                <h4>🚕 計程車</h4>
+                <ul>
+                    <li><b>別假設機場一定攔得到車</b>——旺季／連假常大排長龍，尖峰時段直接改搭公車較快</li>
+                    <li>本行程班次差的點（冬柏森林、吾羅洞）建議 Kakao Taxi 補一段</li>
+                </ul>
+            </div>
+            <div class="t-card">
+                <h4>🚗 租車（僅供比價，本行程不採用）</h4>
+                <ul>
+                    <li>約 <b>NT$1,300／天</b>起，依車型而異</li>
+                    <li>務必先在台灣辦好<b>國際駕照</b></li>
+                    <li>韓國油價約 <b>NT$40／公升</b>，比台灣略貴</li>
+                    <li>2 人以上租車才划算，但<b>本行程已決定不租車</b>，此欄僅供跟包車比價</li>
+                </ul>
+            </div>
+        </div>
+
+        <h3 style="margin:18px 0 6px;font-size:16px;color:var(--text-strong)">🎫 觀光取向的兩種巴士</h3>
+        <div style="overflow-x:auto">
+        <table class="bus-table">
+            <tr><th>類型</th><th>票價</th><th>路線／涵蓋</th><th>本行程適用度</th></tr>
+            <tr>
+                <td class="kr">濟州觀光巴士<br><span style="font-weight:600;color:#64748b">City Tour Bus（市區）</span></td>
+                <td class="m">單趟 NT$130<br>一日票 NT$330</td>
+                <td><b>藍線</b>沿海／<b>紅線</b>市區，共 22 個市區景點<br>含濟州機場、蓮洞商圈、民俗自然史博物館、中央路商圈<br>車上有中文導覽<br><a class="map-link" href="https://jejucitybus.com/cn/coast/busline" target="_blank" rel="noopener">🔗 官網（中文）</a></td>
+                <td>⚠️ <b>每週一停駛</b>，冬季是否照常開需先問旅客服務中心。<br>本行程的市區日改成 <b>DAY 5＝2027/01/31（週日）</b>，<b>非週一公休日，可用</b>。</td>
+            </tr>
+            <tr>
+                <td class="kr">景點巡迴巴士<br><span style="font-weight:600;color:#64748b">810 東線 / 820 西線</span></td>
+                <td class="m">NT$30 起<br>（依距離）</td>
+                <td><b>810 東線</b>：起訖大川換乘中心<br><b>820 西線</b>：起訖東廣換乘中心<br>石頭文化公園、月朗峰、世界遺產中心、和平博物館<br><a class="map-link" href="http://cn.jejutouristshuttle.com/page/page21" target="_blank" rel="noopener">🔗 官網（中文）</a></td>
+                <td>本行程景點多在中山間與南部，兩線<b>都不經過</b>城板岳／1100 高地／山房山。若之後想加東部一日遊再考慮。</td>
+            </tr>
+        </table>
+        </div>
+
+        <h3 style="margin:18px 0 6px;font-size:16px;color:var(--text-strong)">🧭 實際搭乘的細節（現場會用到）</h3>
+        <div class="t-grid">
+            <div class="t-card ok">
+                <h4>✅ 這樣做就對了</h4>
+                <ul>
+                    <li>站牌電子看板<b>右邊數來第二格</b>＝這班車還有幾分鐘到</li>
+                    <li><b>不用招手</b>，司機看到站上有人就會停</li>
+                    <li>下車前要<b>按下車鈴</b>，跟台灣一樣</li>
+                    <li>機場↔西歸浦轉運站這種觀光客多的長途線，車上<b>有英文廣播</b></li>
+                </ul>
+            </div>
+            <div class="t-card warn">
+                <h4>⚠️ 會踩雷的地方</h4>
+                <ul>
+                    <li>公車與站牌<b>幾乎全韓文、沒有英文</b>——坐錯站再等下一班會等很久</li>
+                    <li><b>班次間隔長</b>，心理準備比照在台東等車</li>
+                    <li>冬天等車很冷，<b>毛帽、暖暖包一定要帶</b>（本行程 1 月底，山區更冷）</li>
+                    <li>站牌上會直接印各站到站時刻，但也是韓文——現場還是刷 Naver 最快</li>
+                </ul>
+            </div>
+        </div>
+
+        <p class="bus-note">🔗 官方查詢：<a class="map-link" href="http://bus.jeju.go.kr/?lang=ch" target="_blank" rel="noopener">濟州公車資訊網（中文版）</a>　·　<a class="map-link" href="https://www.visitjeju.net/bus/ExpressandTrunklineBusRouteMap_Korean.pdf" target="_blank" rel="noopener">📄 急行＋幹線公車路線圖 PDF</a></p>
+        <p class="bus-note">📚 本段大眾交通資訊整理自 <a href="https://lillian.tw/jeju_traffic/" target="_blank" rel="noopener">莉莉嗯｜【濟州島交通】公車巴士多少錢／搭乘方式／好用 APP</a>（2024/01/28）；票價與班次可能調整，出發前請再確認一次。</p>
+    </div>
+    </section>
+
+    <nav class="tabbar" id="tabbar">
+        <button data-go="plan"><svg class="i"><use href="#i-cal"/></svg><span>行程</span></button>
+        <button data-go="map"><svg class="i"><use href="#i-map"/></svg><span>地圖</span></button>
+        <button data-go="home" class="home"><i><svg class="i"><use href="#i-home"/></svg></i><span>首頁</span></button>
+        <button data-go="wallet"><svg class="i"><use href="#i-wallet"/></svg><span>記帳</span></button>
+        <button data-go="spots"><svg class="i"><use href="#i-mark"/></svg><span>景點</span></button>
+    </nav>
+
+    <div class="scrim" id="scrim"></div>
+    <div class="sheet" id="sheet" role="dialog" aria-modal="true"></div>
+</div>
+
+<svg width="0" height="0" style="position:absolute">
+    <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></symbol>
+    <symbol id="i-left" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></symbol>
+    <symbol id="i-right" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></symbol>
+    <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
+    <symbol id="i-map" viewBox="0 0 24 24"><path d="M9 4 3.5 6v14L9 18l6 2 5.5-2V4L15 6 9 4z"/><path d="M9 4v14M15 6v14"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M3.5 11 12 4l8.5 7"/><path d="M5.5 9.5V20h13V9.5"/><path d="M10 20v-5.5h4V20"/></symbol>
+    <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M19 7V5.5A1.5 1.5 0 0 0 17.5 4h-12A2.5 2.5 0 0 0 3 6.5v11A2.5 2.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V16"/><path d="M3 6.5A2.5 2.5 0 0 0 5.5 9h13A1.5 1.5 0 0 1 20 10.5V16h-4a2.5 2.5 0 0 1 0-5h4"/></symbol>
+    <symbol id="i-mark" viewBox="0 0 24 24"><path d="M6 3.5h12v17l-6-4.5-6 4.5z"/></symbol>
+    <symbol id="i-plane" viewBox="0 0 24 24"><path d="M21 4 3 11l7 2.5L12.5 21 21 4z"/><path d="M10 13.5 21 4"/></symbol>
+    <symbol id="i-bed" viewBox="0 0 24 24"><path d="M3 19V6M3 15h18v4M21 15v-3a3 3 0 0 0-3-3h-7v6"/><circle cx="7" cy="11" r="2"/></symbol>
+    <symbol id="i-car" viewBox="0 0 24 24"><path d="M5 16V11l2-5h10l2 5v5"/><path d="M3.5 16h17v3h-17zM5 11h14"/><circle cx="7.5" cy="13.5" r=".6"/><circle cx="16.5" cy="13.5" r=".6"/></symbol>
+    <symbol id="i-bus" viewBox="0 0 24 24"><rect x="4.5" y="3.5" width="15" height="14" rx="2.5"/><path d="M4.5 10.5h15M8 17.5V20M16 17.5V20"/><circle cx="8.5" cy="14" r=".6"/><circle cx="15.5" cy="14" r=".6"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5z"/><path d="M20 5.5A1.5 1.5 0 0 0 18.5 4H13v16h5.5a1.5 1.5 0 0 0 1.5-1.5z"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></symbol>
+    <symbol id="i-taxi" viewBox="0 0 24 24"><path d="M5 16v-4l2-5h10l2 5v4"/><path d="M3.5 16h17v3h-17zM5 12h14M10 4h4v3"/></symbol>
+    <symbol id="i-walk" viewBox="0 0 24 24"><circle cx="13" cy="4.5" r="1.8"/><path d="M10 21l2-6 3 3v3M9 12l2-4 4 3 3 1M11 8l-3 1-1 3"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></symbol>
+    <symbol id="i-ext" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v4.5A1.5 1.5 0 0 1 16.5 20h-11A1.5 1.5 0 0 1 4 18.5v-11A1.5 1.5 0 0 1 5.5 6H10"/></symbol>
+</svg>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// ======== 資料（由 JEJU.html 行程抽出） ========
+var DAYS = [{"n": 1, "title": "📅 DAY 1：2027/01/27 (三) 初抵海島．落地海鮮飯卷．利木津南下西歸浦", "highlight": "💡 今日亮點：落地首衝機場旁文青海鮮飯卷，租妥冰爪後搭 600 利木津直奔南國西歸浦", "rows": [{"time": "09:00 - 10:00", "drv": "", "title": "濟州國際機場抵達", "desc": "航班降落，3人一同辦理入境手續與提取行李。", "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Jejuairport2024.jpg/960px-Jejuairport2024.jpg", "cap": "實景：濟州國際機場入境大廳", "place": "濟州國際機場 (Jeju International Airport)", "placeNote": "", "links": [["https://www.google.com/maps/search/?api=1&query=제주국제공항", "📍 Google 地圖"]]}, {"time": "10:00 - 10:30", "drv": "", "title": "入境後的第一件事：確認 600 利木津班次", "desc": "今天要直接南下西歸浦。<b>600 機場利木津<\/b>在 1 樓入境層搭乘，<b>首班 06:00／末班 22:40、約 20 分一班<\/b>，到서귀포約 80 分。<br>先用 Kakao Taxi 在機場周邊跑完午餐與裝備採買，下午再搭 600 南下。", "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/Taxi_in_Gwangju%2C_South_Korea_%28Taxi_stop%29.jpg/960px-Taxi_in_Gwangju%2C_South_Korea_%28Taxi_stop%29.jpg", "cap": "實景：韓國計程車招呼站（示意）", "place": "濟州機場 1F 入境層・600 利木津站牌", "placeNote": "<b>機場→서귀포 ₩5,500／人（NT$127）<\/b><br>3 人 ₩16,500（NT$380）｜同段計程車約 ₩45,000", "links": [["https://www.google.com/maps/search/?api=1&query=제주국제공항+택시승강장", "📍 Google 地圖"]]}, {"time": "10:30 - 12:00", "drv": "🚕 機場旁約 7 分", "title": "🍜 午餐：瑞宇地方餐廳（濟州海鮮飯卷）", "desc": "出機場車程僅 7 分鐘！落地第一餐吃現煮熱呼呼海鮮拉麵，配上鋪滿鮮甜蝦肉的招牌海鮮飯卷。", "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Assorted_Vegetable_Ramen_-_Seafood_flavor_%28Samyang%29_20210825_002.jpg/960px-Assorted_Vegetable_Ramen_-_Seafood_flavor_%28Samyang%29_20210825_002.jpg", "cap": "實景：招牌海鮮拉麵與鮮蝦海鮮飯卷", "place": "瑞宇地方餐廳 (서우제주공항본점)", "placeNote": "💰 <i>三人消費約 NT$ 600 - $800<\/i>", "links": [["https://www.google.com/maps/search/?api=1&query=서우+제주공항본점", "📍 Google 地圖"]]}, {"time": "12:00 - 13:30", "drv": "", "title": "⚠️ 冬攀裝備現場租借 & 超市大補給（務必今天在濟州市辦完）", "desc": "因為這趟先住南部，攻頂日（D3）人在西歸浦，<b>冰爪與登山杖要在今天南下前先租好<\/b>。前往戶外用品店，現場租借後天攻頂必備的<b>「簡易冰爪」與「登山杖」<\/b>。隨後至樂天超市買足暖暖包與山頂高熱量行動糧食。", "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Lotte_mart_Sangmu_branch_20190521_180530.jpg/960px-Lotte_mart_Sangmu_branch_20190521_180530.jpg", "cap": "實景：租借冰爪登山杖並至超市補給", "place": "市區專業用品店", "placeNote": "⚠️ <i>沒帶冰爪會被管理員拒絕入山<\/i>", "links": [["https://www.google.com/maps/search/?api=1&query=롯데마트+제주점", "📍 Google 地圖（樂天超市）"]]}, {"time": "13:30 - 15:00", "drv": "🚌 600 利木津 機場→서귀포 約 80 分", "title": "搭 600 利木津南下西歸浦", "desc": "利木津有專屬行李艙，三人份大行李不用擠。沿途經신제주、중문관광단지，可先把南部地形看過一輪。<br><span style=\"color:#64748b;font-size:13px\">₩5,500／人 ×3 ＝ ₩16,500（NT$380）；同段叫計程車約 ₩45,000（NT$1,035），這段公車完勝。<\/span>", "img": "", "cap": "", "place": "濟州機場 ➔ 西歸浦（46 km・車程約 56 分，利木津含停站約 80 分）", "placeNote": "", "links": [["https://bus.jeju.go.kr/", "🔗 即時班次查詢"]]}, {"time": "15:00 - 16:00", "drv": "🚶 西歸浦市區步行可達", "title": "西歸浦住宿 Check-in（連住 3 晚，行李放到 D4 都不用動）", "desc": "3 人獨立房型、專屬私人衛浴。<b>這趟只搬一次家<\/b>：D1–D3 全在西歸浦，D4 才北上連洞。", "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Bed_in_hotel_room_4.jpg/960px-Bed_in_hotel_room_4.jpg", "cap": "實景：蓮洞商圈獨立公寓房型", "place": "蓮洞商圈生活機能極強之獨立公寓", "placeNote": "", "links": [["https://www.google.com/maps/search/?api=1&query=제주+연동", "📍 Google 地圖"]]}, {"time": "16:30 - 19:30", "drv": "🚶 住宿→偶來市場 約 1 分（0.3 km）", "title": "🍔 西歸浦市區暖身散步・在地晚餐", "desc": "第一晚不排硬行程。住宿走 1 分鐘就是<b>每日偶來市場<\/b>，先繞一圈認環境、吃碗熱的，明天中午再正式來大逛。<br><span style=\"color:#64748b;font-size:13px\">市場周邊有多家在地食堂，黑豬肉、鮑魚砂鍋、刀削麵都在步行圈內。<\/span>", "img": "", "cap": "", "place": "西歸浦每日偶來市場周邊", "placeNote": "", "links": [["https://www.google.com/maps/search/?api=1&query=서귀포+매일올레시장", "📍 Google 地圖"]]}], "meta": [["🍱 今日餐食安排：", "【早餐】機上精緻簡餐 / 【午餐】瑞宇地方餐廳海鮮拉麵飯卷（機場旁）/ 【晚餐】西歸浦偶來市場周邊在地食堂"], ["🏨 今日住宿地點：", "<a href=\"https://google.com\" target=\"_blank\" rel=\"noopener\">Bricks Stay 西歸浦店<\/a> 或同級（三人獨立房型、<b>附專屬獨立衛浴<\/b>）。<a class=\"map-link\" href=\"https://www.google.com/maps/search/?api=1&amp;query=Bricks+Stay+서귀포\" target=\"_blank\" rel=\"noopener\">📍 Google 地圖<\/a><br><span style=\"color:#64748b;font-size:13px\">🗓️ <b>1/27 入住 → 1/30 退房・連住 3 晚<\/b>，中間完全不搬家、行李不用宅配。<\/span>"]]}, {"n": 2, "title": "📅 DAY 2：2027/01/28 (四) 攻頂前調整日．西歸浦市場尋寶．滿開山茶花森林", "highlight": "💡 今日亮點：刻意排最輕的一天——住宿樓下逛偶來市場，平地漫步粉紅山茶花毯，養足體力迎戰明天攻頂", "rows": [{"time": "09:30 - 11:00", "drv": "🚕 包車出發・住宿即在市場旁", "title": "自然醒 ➔ 攻頂前的輕鬆調整日", "desc": "經歷昨日的激戰，今天睡到自然醒。放慢步調驅車前往南部。\n                        \n                    <br><span style=\"color:#be123c;font-weight:700\">⚠️ 明天要攻頂 1950 米，今天刻意排最輕：全是平路散步、不爬坡、不趕路，車程整天只有 26 分。<\/span>", "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/Jeju_Island_20141128_03_%2815895786961%29.jpg/960px-Jeju_Island_20141128_03_%2815895786961%29.jpg", "cap": "實景：放慢步調驅車前往濟州南部", "place": "濟州島南線移動", "placeNote": "", "links": [["https://www.google.com/maps/search/?api=1&query=서귀포시", "📍 Google 地圖（西歸浦市）"]]}, {"time": "11:30 - 14:00", "drv": "🚕 住宿→市場 約 1 分（0.6km）", "title": "🍔 午餐：西歸浦每日偶來市場", "desc": "在市場內自由大探索，分食熱呼呼的黑豬肉可樂餅、年糕、現切刺身等在地特色銅板小吃。", "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Seogwipo_Maeil_Olle_Market_03.jpg/960px-Seogwipo_Maeil_Olle_Market_03.jpg", "cap": "實景：黑豬肉可樂餅、年糕等市場銅板小吃", "place": "西歸浦每日偶來市場 (서귀포매일올레시장)", "placeNote": "", "links": [["https://www.google.com/maps/search/?api=1&query=서귀포매일올레시장", "📍 Google 地圖"]]}, {"time": "15:00 - 17:00", "drv": "🚕 偶來市場→冬柏森林 約 12 分（11.0 km）", "title": "🌟 冬柏森林 (동백포레스트)", "desc": "<b>拒絕高價大眾植物園！<\/b>近年最紅在地山茶花秘境。1月底一整片圓滾滾的矮樹叢開滿粉紅山茶花，地上落花如紅毯，拍照極度夢幻。", "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/2025-04-04_%ED%83%84%ED%95%B5%EC%84%A0%EA%B3%A0%EC%A7%91%ED%9A%8C_%EA%B7%B8%EB%9E%98%ED%94%BC%ED%8B%B0_%EC%A0%9C%EC%A3%BC4%C2%B73%EB%8F%99%EB%B0%B1%EA%BD%83.jpg/960px-2025-04-04_%ED%83%84%ED%95%B5%EC%84%A0%EA%B3%A0%EC%A7%91%ED%9A%8C_%EA%B7%B8%EB%9E%98%ED%94%BC%ED%8B%B0_%EC%A0%9C%EC%A3%BC4%C2%B73%EB%8F%99%EB%B0%B1%EA%BD%83.jpg", "cap": "實景：冬日限定的滿開粉紅山茶花秘境，極具美感", "place": "西歸浦山茶花秘境樹林", "placeNote": "", "links": [["https://www.google.com/maps/search/?api=1&query=동백포레스트", "📍 Google 地圖"]]}, {"time": "18:00 - 19:30", "drv": "🚕 冬柏→西歸浦 約 14 分（12.1km）", "title": "🍔 晚餐：在地大叔私房燉豬肉定食", "desc": "避開觀光餐廳，享用西歸浦在地大叔、司機常去的高 CP 值燉豬肉定食。", "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/A_dish_of_Pork_Belly_in_the_table.jpg/960px-A_dish_of_Pork_Belly_in_the_table.jpg", "cap": "實景：西歸浦在地高CP值燉豬肉定食", "place": "西歸浦在地平價小吃店", "placeNote": "", "links": [["https://www.google.com/maps/search/?api=1&query=서귀포+백반+맛집", "📍 Google 地圖"]]}, {"time": "20:00 ~", "drv": "🚕 三代麵條→蓮洞 約 9 分（7.3km）", "title": "登山前夜整備（今晚務必早睡）", "desc": "早早回住宿休息，利用房內熱水壺灌滿 3 人的登山保溫瓶、檢查個人免費預約的入山 QR 碼。", "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Camp_Crampons.jpg/960px-Camp_Crampons.jpg", "cap": "實景：灌熱水、檢查入山 QR 碼整備裝備", "place": "Urbanstay 獨立房間", "placeNote": "", "links": [["https://www.google.com/maps/search/?api=1&query=Urbanstay+Jeju+Airport", "📍 Google 地圖"]]}], "meta": [["🍱 今日餐食安排：", "【早餐】住宿自理 / 【午餐】西歸浦每日偶來市場銅板美食 / 【晚餐】在地小資燉豬肉定食（<b>攻頂前一晚，早點吃早點睡<\/b>）"], ["🏨 今日住宿地點：", "<a href=\"https://google.com\" target=\"_blank\" rel=\"noopener\">Bricks Stay 西歸浦店<\/a> 或同級（三人獨立房型、<b>附專屬獨立衛浴<\/b>）。<a class=\"map-link\" href=\"https://www.google.com/maps/search/?api=1&amp;query=Bricks+Stay+서귀포\" target=\"_blank\" rel=\"noopener\">📍 Google 地圖<\/a><br><span style=\"color:#64748b;font-size:13px\">🗓️ <b>1/27 入住 → 1/30 退房・連住 3 晚<\/b>，中間完全不搬家、行李不用宅配。<\/span>"]]}, {"n": 3, "title": "📅 DAY 3：2027/01/29 (五) 世紀挑戰！齊心征服南韓最高峰．漢拏山冰雪白鹿潭", "highlight": "💡 今日亮點：踏過銀白霧凇森林攻頂 1950 米雪白火山口，下山回同一間住宿、行李完全不用動", "rows": [{"time": "05:30 - 06:30", "drv": "🚌 281 番 西歸浦→城板岳 約 32 分", "title": "清晨摸黑出發", "desc": "摸黑起床，3人打包好防寒登山裝備，開車直奔登山口（或合搭計程車以免車位停滿）。", "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/Winter_in_Schmiedefeld_am_Rennsteig.jpg/960px-Winter_in_Schmiedefeld_am_Rennsteig.jpg", "cap": "實景：清晨摸黑開往城板岳登山口", "place": "濟州市區 ➔ 漢拏山移動", "placeNote": "", "links": [["https://www.google.com/maps/search/?api=1&query=성판악탐방안내소", "📍 Google 地圖（城板岳登山口）"]]}, {"time": "06:30 - 11:30", "drv": "🚕 蓮洞→城板岳 約 29 分（20.2km）", "title": "🌟 城板岳登山口 ➔ 杜鵑花田蔽護所", "desc": "驗證免費預約的 QR Code，穿上冰爪正式開爬！沿途是一整片夢幻的銀白霧凇森林。", "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Winter_Hallasan_Summit.jpg/960px-Winter_Hallasan_Summit.jpg", "cap": "實景：步道兩側結滿銀白色的霧凇冰晶", "place": "城板岳登山步道", "placeNote": "⚠️ <i>雪季強制穿冰爪入山<\/i>", "links": [["https://www.google.com/maps/search/?api=1&query=성판악탐방로", "📍 Google 地圖"]]}, {"time": "11:30 - 12:00", "drv": "", "title": "🚨 生死管制時間分水嶺", "desc": "<b>嚴格限制！<\/b>三人必須在 11:30 前「全員通過」杜鵑花田蔽護所，否則禁止登頂。在蔽護所雪地上吃自備的熱水泡麵與飯捲。", "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Hallasan_in_Winter.jpg/960px-Hallasan_in_Winter.jpg", "cap": "實景：杜鵑花田蔽護所雪地野餐", "place": "杜鵑花田中途管制哨", "placeNote": "<span class=\"badge badge-pink\">11:30 準時清場<\/span>", "links": [["https://www.google.com/maps/search/?api=1&query=진달래밭대피소", "📍 Google 地圖"]]}, {"time": "12:00 - 13:30", "drv": "", "title": "🌟 成功攻頂漢拏山：白鹿潭主峰", "desc": "成功站在海拔 1950 米的雪白火山口石碑前拍下終身難忘的完登合照！", "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Winter_Baengnokdam.jpg/960px-Winter_Baengnokdam.jpg", "cap": "實景：被厚厚白雪全面覆蓋的壯麗白鹿潭火山口", "place": "漢拏山白鹿潭主峰", "placeNote": "⏰ <i>山頂 13:30 準時廣播下山<\/i>", "links": [["https://www.google.com/maps/search/?api=1&query=한라산+백록담", "📍 Google 地圖"]]}, {"time": "13:30 - 17:00", "drv": "", "title": "安全步行下山 ➔ 領完登證書", "desc": "沿原路安全下山回到登山口，在機器繳納 1,000 韓元，領取並拍照留念你們的紙本「漢拏山完登證書」。", "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Winter_Hallasan_Summit.jpg/960px-Winter_Hallasan_Summit.jpg", "cap": "實景：紙本漢拏山完登證書", "place": "城板岳登山口服務處", "placeNote": "💰 <i>證書費 1,000 韓元<\/i>", "links": [["https://www.google.com/maps/search/?api=1&query=성판악탐방안내소", "📍 Google 地圖"]]}, {"time": "18:30 - 20:00", "drv": "🚌 281 番 城板岳→西歸浦 約 32 分", "title": "🍜 晚餐：24小時馬鈴薯排骨湯", "desc": "下山後全身疲憊酸痛，最適合來一鍋濃郁香辣的馬鈴薯豬骨湯，大口啃肉喝熱湯，每人只要小資銅板價，絕對是下山救星！", "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Gamja-tang_5.jpg/960px-Gamja-tang_5.jpg", "cap": "實景：濃郁香辣的馬鈴薯豬骨湯", "place": "市區名店 24시뼈다귀해장국", "placeNote": "💰 <i>大排骨熱湯鍋，小資高CP值<\/i>", "links": [["https://www.google.com/maps/search/?api=1&query=서귀포+뼈다귀해장국", "📍 Google 地圖"]]}], "meta": [["🍱 今日餐食安排：", "【早餐】清晨超商御飯糰 / 【午餐】山頂蔽護所雪地野餐（自備保溫瓶熱水泡麵＋乾糧）/ 【晚餐】24 小時馬鈴薯排骨湯大復活"], ["🏨 今日住宿地點：", "<a href=\"https://google.com\" target=\"_blank\" rel=\"noopener\">Bricks Stay 西歸浦店<\/a> 或同級（三人獨立房型、<b>附專屬獨立衛浴<\/b>）。<a class=\"map-link\" href=\"https://www.google.com/maps/search/?api=1&amp;query=Bricks+Stay+서귀포\" target=\"_blank\" rel=\"noopener\">📍 Google 地圖<\/a><br><span style=\"color:#64748b;font-size:13px\">🗓️ <b>1/27 入住 → 1/30 退房・連住 3 晚<\/b>，中間完全不搬家、行李不用宅配。<\/span>"]]}, {"n": 4, "title": "📅 DAY 4：2027/01/30 (六) 鐵腿救星碳酸溫泉．1100 高地雪白樹海．北上入住連洞", "highlight": "💡 今日亮點：一早泡碳酸溫泉瓦解鐵腿，橘子咖啡續攤，直上冰雪奇緣雪世界，包車載著行李一路北上連洞", "rows": [{"time": "09:30 - 11:30", "drv": "🚕 包車出發・西歸浦→山房山 約 30 分（26.7 km）", "title": "🌟 🚨 鐵腿救星：山房山碳酸溫泉 (산방산탄산온천)", "desc": "<b>昨天剛攻完頂，今天第一站就是泡湯<\/b>——碳酸泉對登山後的乳酸堆積與關節疲勞最有感。🚨 <i>出發前先在網路買好電子優惠券。<\/i>3人一起泡入獨特的室外碳酸露天溫泉，背靠雄偉的山房山，對緩解昨天登山的全身酸痛與關節疲勞有奇效！", "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Sanbangsan_%282025-01%29.jpg/960px-Sanbangsan_%282025-01%29.jpg", "cap": "實景：背靠山房山的露天碳酸溫泉", "place": "山房山碳酸溫泉", "placeNote": "<span class=\"badge badge-orange\">網購優惠券更省<\/span>", "links": [["https://www.google.com/maps/search/?api=1&query=산방산탄산온천", "📍 Google 地圖"]]}, {"time": "12:00 - 13:30", "drv": "🚕 山房山→橘花閣樓 約 17 分（今天搬家，行李整天在車上）", "title": "🌟 橘花閣樓 (Cafe gyulkkot darak)", "desc": "<b>澄清：就是這家！<\/b>隱身超大橘子園的復古歐風咖啡廳。1月底金黃橘子掛滿樹。免採橘子門票，低消一人點一杯橘子拿鐵，就能在專屬保留的大窗景和後院橘子隧道拍網美大片！", "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/%EC%A0%9C%EC%A3%BC_%EB%8F%84%EB%A0%A8%EB%8F%99_%EA%B7%A4%EB%82%98%EB%AC%B4%EB%A5%98_-_%EC%82%B0%EA%B7%A4%EB%82%98%EB%AC%B4.jpg/960px-%EC%A0%9C%EC%A3%BC_%EB%8F%84%EB%A0%A8%EB%8F%99_%EA%B7%A4%EB%82%98%EB%AC%B4%EB%A5%98_-_%EC%82%B0%EA%B7%A4%EB%82%98%EB%AC%B4.jpg", "cap": "實景：橘子園裡的復古歐風咖啡廳與橘子隧道", "place": "橘花閣樓咖啡廳 (귤꽃다락)", "placeNote": "💰 <i>每人低消飲品約 NT$ 160<\/i>", "links": [["https://www.google.com/maps/search/?api=1&query=귤꽃다락", "📍 Google 地圖"]]}, {"time": "14:00 - 16:00", "drv": "🚕 橘花閣樓→1100 約 26 分（17.6km）", "title": "🌟 漢拏山 1100 高地 (1100고지)", "desc": "<b>免爬山賞雪勝地！<\/b>包車直接沿 1100 公路開上去。路邊全是厚厚積雪與冰晶樹海，彷彿置身冰雪奇緣世界。還可以與經典純白鹿雕像合照。", "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Winter_forest_after_snow_storm_%2840384754601%29.jpg/960px-Winter_forest_after_snow_storm_%2840384754601%29.jpg", "cap": "實景：在地人最愛的免爬山賞雪祕境公路，難得的雪白樹海", "place": "漢拏山1100高地休憩所", "placeNote": "<span class=\"badge badge-blue\">免門票<\/span>", "links": [["https://www.google.com/maps/search/?api=1&query=1100고지휴게소", "📍 Google 地圖"]]}, {"time": "16:30 - 17:00", "drv": "🚕 1100→濟州市 約 20 分（18.0km）", "title": "歸還登山裝備", "desc": "包車返回濟州市區，歸還 3 人的租借冰爪、登山杖。", "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Strap-on_crampon.JPG/960px-Strap-on_crampon.JPG", "cap": "實景：返回市區歸還冰爪與登山杖", "place": "濟州市區原租借用品店", "placeNote": "", "links": [["https://www.google.com/maps/search/?api=1&query=제주시+등산용품점", "📍 Google 地圖"]]}, {"time": "17:00 - 18:15", "drv": "", "title": "🛒 大型 E-MART 超市伴手禮大採購", "desc": "<b>避開觀光伴手禮店！<\/b>超市裡的橘子派、漢拏山燒酒、海苔才是真正的在地便宜價。", "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/E-mart_Gwangju_branch_20190521_102824.jpg/960px-E-mart_Gwangju_branch_20190521_102824.jpg", "cap": "實景：超市裡的橘子派、燒酒、海苔伴手禮", "place": "濟州市區大行 E-MART", "placeNote": "", "links": [["https://www.google.com/maps/search/?api=1&query=이마트+제주점", "📍 Google 地圖"]]}, {"time": "18:20 - 18:40", "drv": "🚕 E-MART→連洞 約 3 分（2.4 km）", "title": "🏨 Howard Johnson 濟州連洞 Check-in（唯一一次搬家）", "desc": "包車直接把三人行李從西歸浦載到飯店門口，<b>全程不用扛、不用行李宅配<\/b>。<br><span style=\"color:#64748b;font-size:13px\">明天市區日與後天機場都從這裡出發：門口 삼무공원 站步行 1 分、到機場只要 4 分鐘。<\/span>", "img": "", "cap": "", "place": "Howard Johnson 濟州連洞（삼무로 57）", "placeNote": "", "links": [["#hotelbus", "🚌 周邊公車站"]]}, {"time": "19:00 - 20:30", "drv": "🚕 E-MART→蓮洞 約 3 分（2.4km）", "title": "🍔 晚餐：在地平價烤肉定食", "desc": "旅程最後一晚，在蓮洞商圈享用在地高 CP 值的烤肉飯定食，小資又滿足。", "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Korean.cuisine-Samgyeopsal-01.jpg/960px-Korean.cuisine-Samgyeopsal-01.jpg", "cap": "實景：蓮洞商圈在地高CP值烤肉飯定食", "place": "蓮洞商圈美食街", "placeNote": "💰 <i>每人花費約 NT$ 350<\/i>", "links": [["https://www.google.com/maps/search/?api=1&query=제주+연동+먹자골목", "📍 Google 地圖"]]}], "meta": [["🍱 今日餐食安排：", "【早餐】住宿自理（泡湯前別吃太飽）/ 【午餐】網美橘子園咖啡廳精緻午茶（青橘起司蛋糕＋橘子拿鐵）/ 【晚餐】蓮洞在地平價烤肉定食"], ["🏨 今日住宿地點：", "<a href=\"https://www.booking.com/hotel/kr/howard-johnson-jeju-city.zh-tw.html\" target=\"_blank\" rel=\"noopener\">Howard Johnson 濟州連洞 (하워드존슨 제주 호텔・삼무로 57)<\/a><a class=\"map-link\" href=\"https://www.google.com/maps/search/?api=1&amp;query=%ED%95%98%EC%9B%8C%EB%93%9C%EC%A1%B4%EC%8A%A8%20%EC%A0%9C%EC%A3%BC%20%ED%98%B8%ED%85%94\" target=\"_blank\" rel=\"noopener\">📍 Google 地圖<\/a>　<a class=\"map-link\" href=\"#hotelbus\">🚌 周邊公車站<\/a><br><span style=\"color:#64748b;font-size:13px\">🗓️ <b>1/30 入住 → 2/01 退房・2 晚<\/b>｜門口 삼무공원 站步行 1 分、到機場 2.6 km 約 4 分。備案：<\/span><a href=\"https://plott.co.kr\" target=\"_blank\" rel=\"noopener\">Urbanstay Jeju Airport<\/a> 或同級。"]]}, {"n": 5, "title": "📅 DAY 5：2027/01/31 (日) 吾羅洞寂靜秘境．東門市場掃貨．點燈松林夜市", "highlight": "💡 今日亮點：全黑白枯枝的極致孤寂荒原，東門市場伴手禮一次買齊，夜宿萬盞燈泡的松樹林", "rows": [{"time": "10:00 - 12:00", "drv": "🚕 連洞→吾羅洞 約 12 分（7.7 km）", "title": "🌟 🚀 吾羅洞冬景秘境", "desc": "位置直接雙手奉上。1月底冬天是一整片漫無邊際、震撼寂靜的雪白荒原與黑枯枝，背景就是白雪皚皚的漢拏山，拍出孤寂美學大片。", "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Hallasan_in_Winter.jpg/960px-Hallasan_in_Winter.jpg", "cap": "實景：雪白荒原與黑枯枝，背景漢拏山", "place": "導航輸入：제주특별자치도 제주시 오라2동 산76", "placeNote": "(濟州市吾羅二洞山76號)", "links": [["https://www.google.com/maps/search/?api=1&query=제주시+오라2동+산76", "📍 Google 地圖"]]}, {"time": "12:30 - 13:30", "drv": "🚕 吾羅洞→三代麵條 約 15 分（8.6 km）", "title": "🍜 午餐：三代麵條（삼대국수회관）", "desc": "吃一碗大碗滿意、熱氣騰騰的在地傳統豬肉湯麵，湯頭濃郁香醇，徹底暖活全身。", "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Gogi-guksu.jpg/960px-Gogi-guksu.jpg", "cap": "實景：熱騰騰的傳統豬肉湯麵", "place": "濟州傳統麵條文化街", "placeNote": "💰 <i>大碗豬肉湯麵每人約 NT$ 250<\/i>", "links": [["https://www.google.com/maps/search/?api=1&query=삼대국수회관", "📍 Google 地圖"]]}, {"time": "14:00 - 16:00", "drv": "🚌 三代麵條→東門市場 約 10 分", "title": "🛍️ 濟州東門市場（제주 동문시장）", "desc": "濟州市規模最大的傳統市場，<b>白天是市場、傍晚接夜市<\/b>。橘子、乾魚貨、黑豬肉串、海鮮、伴手禮一次買齊，價格比觀光區實在。<br><span style=\"color:#64748b;font-size:13px\">距連洞飯店 4.8 km／車程 7 分，是這趟唯一的濟州市傳統市場。<\/span>", "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Jeju_dongmun_market_1.JPG/960px-Jeju_dongmun_market_1.JPG", "cap": "實景：濟州東門市場", "place": "제주 동문시장（濟州市 一徒一洞）", "placeNote": "", "links": [["https://www.google.com/maps/search/?api=1&query=제주+동문시장", "📍 Google 地圖"]]}, {"time": "16:30 - 18:00", "drv": "🚕 東門市場→樹木園 約 15 分", "title": "🌟 漢拿林木園 (한라수목원)", "desc": "<b>完全免費！<\/b>避開高額門票。冬天的杉樹林高聳入天，不僅能幫你們擋住外面的刺骨寒風，漫步其間還能幫明天的雙腿做適度熱身。", "img": "https://upload.wikimedia.org/wikipedia/commons/6/68/Arboretum_of_Halla1.jpg", "cap": "實景：高聳入天的冬日杉樹林步道", "place": "濟州市區漢拿林木園步道", "placeNote": "<span class=\"badge badge-blue\">免門票<\/span>", "links": [["https://www.google.com/maps/search/?api=1&query=한라수목원", "📍 Google 地圖"]]}, {"time": "18:00 - 20:30", "drv": "🚶 樹木園內・白天逛完直接接夜市", "title": "🍔 晚餐：漢拏樹木園露天點燈夜市", "desc": "冬日照常營業！一到夜晚，高聳松樹林間點滿萬盞橘黃色燈泡。圍在露天座椅邊吃餐車現烤黑豬肉串、熱魚板湯，便宜有氣氛。", "img": "https://upload.wikimedia.org/wikipedia/commons/7/75/Seoul-Namdaemun.Market-Street.food-02.jpg", "cap": "示意：夜市餐車街頭小吃", "place": "漢拏樹木園夜市 (수목원길야시장)", "placeNote": "⏰ <i>冬季營業：18:00 - 22:00<\/i>", "links": [["https://www.google.com/maps/search/?api=1&query=수목원길야시장", "📍 Google 地圖"]]}, {"time": "21:00 ~", "drv": "🚕 三代麵條→蓮洞 約 9 分（7.3km）", "title": "行李打包・最後採買", "desc": "早早回公寓休息，利用房內熱水壺灌滿3人的登山保溫瓶、檢查個人免費預約的入山 QR 碼。", "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Camp_Crampons.jpg/960px-Camp_Crampons.jpg", "cap": "實景：灌熱水、檢查入山 QR 碼整備裝備", "place": "Urbanstay 獨立房間", "placeNote": "", "links": [["https://www.google.com/maps/search/?api=1&query=Urbanstay+Jeju+Airport", "📍 Google 地圖"]]}], "meta": [["🍱 今日餐食安排：", "【早餐】飯店自理 / 【午餐】三代麵條傳統豬肉湯麵 / 【晚餐】漢拏樹木園夜市小餐車美食大探索（東門市場先掃貨）"], ["🏨 今日住宿地點：", "<a href=\"https://www.booking.com/hotel/kr/howard-johnson-jeju-city.zh-tw.html\" target=\"_blank\" rel=\"noopener\">Howard Johnson 濟州連洞 (하워드존슨 제주 호텔・삼무로 57)<\/a><a class=\"map-link\" href=\"https://www.google.com/maps/search/?api=1&amp;query=%ED%95%98%EC%9B%8C%EB%93%9C%EC%A1%B4%EC%8A%A8%20%EC%A0%9C%EC%A3%BC%20%ED%98%B8%ED%85%94\" target=\"_blank\" rel=\"noopener\">📍 Google 地圖<\/a>　<a class=\"map-link\" href=\"#hotelbus\">🚌 周邊公車站<\/a><br><span style=\"color:#64748b;font-size:13px\">🗓️ <b>1/30 入住 → 2/01 退房・2 晚<\/b>｜門口 삼무공원 站步行 1 分、到機場 2.6 km 約 4 分。備案：<\/span><a href=\"https://plott.co.kr\" target=\"_blank\" rel=\"noopener\">Urbanstay Jeju Airport<\/a> 或同級。"]]}, {"n": 6, "title": "📅 DAY 6：2027/02/01 (一) 濟州島 ➔ 台灣：搭車赴機場、免稅店巡禮、平安返家", "highlight": "💡 今日亮點：飯店到機場只要 4 分鐘，最後免稅店伴手禮巡禮，搭機平安返家", "rows": [{"time": "09:00 - 09:30", "drv": "🚕 飯店→機場 約 4 分（2.6km）・約 ₩4,900（NT$113 全車）", "title": "辦理退房、搭車前往機場", "desc": "Howard Johnson 退房後直接叫車去機場；不趕時間也可走到삼무공원站搭公車。⚠️ 週末與連假早上叫車較慢，建議提前 15 分鐘叫。", "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Jejuairport2024.jpg/960px-Jejuairport2024.jpg", "cap": "實景：濟州機場出境層下客區", "place": "濟州國際機場出境層", "placeNote": "", "links": [["https://www.google.com/maps/search/?api=1&query=제주국제공항", "📍 Google 地圖"]]}, {"time": "09:40 - 11:40", "drv": "", "title": "濟州國際機場辦理登機", "desc": "3人一起辦理登機托運、機場退稅，並在免稅店進行最後補貨。", "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Jejuairport2024.jpg/960px-Jejuairport2024.jpg", "cap": "實景：出境大廳辦理登機與免稅店補貨", "place": "濟州國際機場出境大廳", "placeNote": "", "links": [["https://www.google.com/maps/search/?api=1&query=제주국제공항", "📍 Google 地圖"]]}, {"time": "11:40 ~", "drv": "", "title": "✈️ 搭機返台", "desc": "準時登機，飛離濟州島，圓滿結束省錢、隱私足夠、看滿雪景與茶花的完美濟州之旅！", "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/34/Airplane_window_capture.jpg/960px-Airplane_window_capture.jpg", "cap": "實景：準時登機，平安飛離濟州島返台", "place": "返回台灣航班", "placeNote": "", "links": [["https://www.google.com/maps/search/?api=1&query=제주국제공항", "📍 Google 地圖（濟州機場）"]]}], "meta": [["🍱 今日餐食安排：", "【早餐】公寓內簡易自理 / 【午餐】機上精緻簡餐 / 【晚餐】溫暖的家"]]}];
+// 每天交通花費（₩，全組合計；取自「包車版」方案估價表）
+var DAY_COST = {"1": 20800, "2": 27600, "3": 7200, "4": 275000, "5": 29200, "6": 4900};
+// [緯度, 經度, 天數, 名稱, 類型('spot'/'stay'), 是否近似]
+var SPOTS = [
+        [33.5071, 126.4916, 1, '濟州國際機場（Day 1 抵達 / Day 6 離境）', 'spot', false],
+        [33.5050, 126.4880, 1, '瑞宇海鮮飯卷（機場旁）', 'spot', true],
+        [33.2502, 126.5636, 2, '西歸浦每日偶來市場', 'spot', false],
+        
+        [33.2876, 126.6450, 2, '冬柏森林 동백포레스트（近似位置）', 'spot', true],
+        [33.3850, 126.6191, 3, '城板岳登山口', 'spot', false],
+        [33.3698, 126.5555, 3, '杜鵑花田蔽護所', 'spot', false],
+        [33.3621, 126.5333, 3, '漢拏山 白鹿潭主峰', 'spot', false],
+        [33.2489, 126.2987, 4, '山房山碳酸溫泉（D4 鐵腿救星）', 'spot', false],
+        [33.2700, 126.4200, 4, '橘花閣樓咖啡 귤꽃다락（近似位置）', 'spot', true],
+        [33.3577, 126.4627, 4, '漢拏山 1100 高地', 'spot', false],
+        [33.4848, 126.4802, 4, 'E-MART 新濟州店', 'spot', false],
+        [33.4470, 126.5230, 5, '吾羅洞冬景秘境（近似位置）', 'spot', true],
+        [33.5067, 126.5301, 5, '三代麵條 삼대국수회관', 'spot', false],
+        [33.5122, 126.5276, 5, '濟州東門市場 동문시장', 'spot', false],
+        [33.4695, 126.4926, 5, '漢拿樹木園（杉樹林＋點燈夜市）', 'spot', false],
+        [33.2497, 126.5610, 0, '🏨 住宿A：西歸浦（Day 1·2·3 連住 3 晚）', 'stay', false],
+        [33.490077, 126.492600, 0, '🏨 住宿B：Howard Johnson 連洞（Day 4·5）', 'stay', false]
+    ];
+// 飯店周邊公車站 [緯度, 經度, 韓文站名, 說明]
+var BUS_STOPS = [
+        [33.489800, 126.492400, '삼무공원', '三務公園（飯店正前方）\u3000約 36 m'],
+        [33.489902, 126.493733, '제주썬호텔', '濟州 Sun Hotel\u3000約 107 m'],
+        [33.489719, 126.493703, '제주썬호텔', '濟州 Sun Hotel\u3000約 110 m'],
+        [33.489969, 126.491277, '삼무공원', '三務公園（對向）\u3000約 123 m'],
+        [33.489877, 126.495030, '수협제주도지회', '水協濟州道支會\u3000約 226 m'],
+        [33.490792, 126.490235, '삼무공원', '三務公園（北側）\u3000約 233 m'],
+        [33.488409, 126.490219, '제원아파트', '濟元公寓（新濟州大站）\u3000約 288 m'],
+        [33.489899, 126.488940, '롯데시티호텔(600번)', '樂天 City Hotel〔600 機場利木津〕\u3000約 340 m'],
+        [33.489900, 126.488917, '삼무공원사거리/롯데시티호텔', '三務公園十字路口／樂天 City\u3000約 342 m'],
+        [33.491580, 126.489349, '연동한일시티파크', '蓮洞韓一 City Park\u3000約 345 m'],
+        [33.491100, 126.496467, '제주도청 신제주로터리', '濟州道廳・新濟州圓環\u3000約 376 m'],
+        [33.493650, 126.493183, '신광사거리', '新光十字路口\u3000約 401 m'],
+        [33.488147, 126.496363, '연동주민센터', '蓮洞住民中心\u3000約 410 m']
+    ];
+
+// 換錢點 [緯度, 經度, 名稱, 韓文名／搜尋詞, 說明, 是否近似]
+// 來源：lizzzstyle.tw/jeju-money-exchange（2026/3 實測）、moneyboxjeju.com；座標以 OSM 查得
+var EXCHANGE = [
+    [33.5068, 126.4930, '濟州機場 JEJU BANK', '제주은행 제주국제공항', '入境大廳 GATE 4～5 之間<br>匯率最差（約 1 台幣換 ₩43），<b>D1 落地只換一點應急</b>', true],
+    [33.48504, 126.48226, 'MONEY BOX 濟州分店', '머니박스 제주지점', '제주시 원노형4길 1, 에코메르 102호<br>10:00–21:00（13:00–14:00 午休）<br>約 1 台幣換 ₩44.5・<b>D1 樂天超市旁 300 m，建議換主要金額</b>', true],
+    [33.51289, 126.52605, 'MONEY BOX 東門市場店', '머니박스 제주동문시장점', '제주시 관덕로 64 명가빌딩 1층<br>09:30–21:00<br><b>D5 逛東門市場順路補錢</b>（週日是否營業未確認）', false],
+    [33.48537, 126.48150, 'WOWPASS 機台・君悅酒店', '그랜드 하얏트 제주', '濟州君悅酒店（夢想塔）內<br>WOWPASS 匯率最好（約 1 台幣換 ₩45.35）', false],
+    [33.24833, 126.50909, 'WOWPASS 機台・西歸浦 E-MART', '이마트 서귀포점', 'D1–D3 住西歸浦時可用<br>能否直接換現金請先用 WOWPASS App 確認', false],
+    [33.23978, 126.56393, 'WOWPASS 機台・西歸浦港', '서귀포항', '機台實際位置請用 WOWPASS App 確認<br>能否直接換現金請先確認', true]
+];
+
+// 每天順路的換錢點：[EXCHANGE 索引, 當天的建議]
+var DAY_EXCHANGE = {
+    1: { tip: '今天就把大部分韓幣換好，之後幾天都在西歸浦，換錢所少。', pts: [[0, '09:00 落地：只換午餐和 600 利木津的應急現金'], [1, '12:00 去樂天超市時順路（相距約 300 m）：換主要金額，13:00–14:00 午休']] },
+    2: { tip: '西歸浦沒有換錢所，缺現金就用 WOWPASS 機台。', pts: [[4, '西歸浦 E-MART 內的 WOWPASS 機台'], [5, '西歸浦港的 WOWPASS 機台']] },
+    3: { tip: '爬山日沒有換錢的機會，前一天先確認現金夠用（281 公車、晚餐）。', pts: [[4, '下山回西歸浦後，缺錢再去 E-MART 的 WOWPASS']] },
+    4: { tip: '傍晚入住連洞後，附近就有換錢點。', pts: [[3, '君悅酒店（夢想塔）WOWPASS 機台，匯率最好'], [1, 'MONEY BOX 濟州分店，營業到 21:00']] },
+    5: { tip: '14:00 逛東門市場時順路補錢。', pts: [[2, '距東門市場約 160 m（週日是否營業未確認）']] },
+    6: { tip: '最後一天把韓幣花完；剩下的零錢留著下次，或到機場銀行櫃台詢問能否換回。', pts: [[0, '出境前：剩餘韓幣可詢問櫃台（能否換回台幣請現場確認）']] }
+};
+
+var TRIP_START = new Date(2027, 0, 27);
+var WD = ['週日', '週一', '週二', '週三', '週四', '週五', '週六'];
+var WD_ZH = ['日', '一', '二', '三', '四', '五', '六'];
+var DAY_COLOR = { 1: '#4F74A8', 2: '#5B9AA6', 3: '#7768A8', 4: '#B8607A', 5: '#C98A3E', 6: '#5E8C6A' };
+// 各人數每人預算（JEJU.html 預算卡）
+var BUDGET_PP = { 2: 15000, 3: 12000, 4: 10500 };
+var CATS = ['餐飲', '交通', '住宿', '門票', '購物', '其他'];
+
+// ======== 儲存（只存在這台裝置的瀏覽器） ========
+function load(k, d) { try { var v = localStorage.getItem('jeju.' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } }
+function save(k, v) { try { localStorage.setItem('jeju.' + k, JSON.stringify(v)); } catch (e) {} }
+
+var S = {
+    day: 1, view: 'home', info: 'hotel', spotFilter: '全部',
+    rate: load('rate', 0.023),
+    members: load('members', [{ id: 'mA', name: '旅伴 A', n: 1, dep: 0 }, { id: 'mB', name: '旅伴 B', n: 1, dep: 0 }, { id: 'mC', name: '旅伴 C', n: 1, dep: 0 }]),
+    expenses: load('expenses', []), saved: load('saved', [])
+};
+
+function $(s, r) { return (r || document).querySelector(s); }
+function $$(s, r) { return [].slice.call((r || document).querySelectorAll(s)); }
+function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+function icon(id) { return '<svg class="i"><use href="#i-' + id + '"/></svg>'; }
+
+// ======== 雲端同步（Google 試算表，經 Apps Script） ========
+// 記帳、成員、匯率共用一份；航班、行李、收藏仍只存在這台裝置
+var SYNC_URL_DEFAULT = '';   // 部署後的「…/exec」網址
+var SYNC = { url: load('syncUrl', SYNC_URL_DEFAULT), key: load('syncKey', 'jeju2027'), outbox: load('outbox', []), at: load('syncAt', 0), busy: false, err: '' };
+function syncOn() { return !!SYNC.url; }
+function listOf(t) { return t === 'expenses' ? S.expenses : t === 'members' ? S.members : null; }
+function applyOp(o) {
+    if (o.table === 'settings') { if (o.row.id === '匯率' && +o.row.value > 0) S.rate = +o.row.value; return; }
+    var list = listOf(o.table), i;
+    for (i = 0; i < list.length && list[i].id !== o.row.id; i++);
+    if (o.op === 'delete') { if (i < list.length) list.splice(i, 1); }
+    else if (i < list.length) Object.assign(list[i], o.row);
+    else list.push(Object.assign({}, o.row));
+}
+function applyRemote(d) {
+    var live = function (r) { return r.status !== '已刪除'; };
+    S.expenses = (d.expenses || []).filter(live).map(function (r) {
+        return { id: String(r.id), amt: +r.amt || 0, cur: r.cur === 'TWD' ? 'TWD' : 'KRW', cat: r.cat || '其他', day: +r.day || 1, payer: String(r.payer || 'pool'), note: String(r.note || '') };
+    });
+    S.members = (d.members || []).filter(live).map(function (r) {
+        return { id: String(r.id), name: String(r.name), n: Math.max(1, +r.n || 1), dep: +r.dep || 0 };
+    });
+    (d.settings || []).forEach(function (r) { if (r.id === '匯率' && +r.value > 0) S.rate = +r.value; });
+    SYNC.outbox.forEach(applyOp);   // 還沒送出的操作疊在最新資料上
+    save('expenses', S.expenses); save('members', S.members); save('rate', S.rate);
+    SYNC.at = Date.now(); save('syncAt', SYNC.at);
+}
+function sheetRow(o) {
+    var r = o.row;
+    if (o.op === 'delete') return { id: r.id };
+    if (o.table === 'expenses') return { id: r.id, day: r.day, cat: r.cat, note: r.note, amt: r.amt, cur: r.cur, payer: r.payer, payerName: memberName(r.payer || 'pool') };
+    if (o.table === 'members') return { id: r.id, name: r.name, n: r.n, dep: r.dep };
+    return r;
+}
+function queue(table, op, row) {
+    if (!syncOn()) return;
+    SYNC.outbox.push({ table: table, op: op, row: JSON.parse(JSON.stringify(row)) });
+    save('outbox', SYNC.outbox); syncUi(); flush();
+}
+function syncDone(d) {
+    var wasRate = S.rate;
+    applyRemote(d); SYNC.err = ''; syncUi();
+    var a = document.activeElement;
+    if (S.view === 'wallet' && !$('#sheet.on') && !(a && a.closest && a.closest('#v-wallet') && a.tagName === 'INPUT')) renderWallet();
+    if (S.rate !== wasRate) renderDay();
+}
+function syncFail(e) {
+    SYNC.busy = false;
+    // 網路層失敗（TypeError）顯示白話；伺服器回的錯誤（如同步碼錯誤）原文照列
+    SYNC.err = navigator.onLine === false ? '離線中' : !e || e instanceof TypeError || e instanceof SyntaxError ? '連不上共用帳本' : e.message;
+    syncUi();
+}
+function flush() {
+    if (!syncOn() || SYNC.busy) return;
+    SYNC.busy = true;
+    if (!SYNC.outbox.length) {
+        fetch(SYNC.url + (SYNC.url.indexOf('?') < 0 ? '?' : '&') + 'key=' + encodeURIComponent(SYNC.key) + '&t=' + Date.now())
+            .then(function (r) { return r.json(); })
+            .then(function (d) { SYNC.busy = false; if (!d.ok) throw new Error(d.error); if (!SYNC.outbox.length) syncDone(d); else flush(); })
+            .catch(syncFail);
+        return;
+    }
+    var o = SYNC.outbox[0];
+    // text/plain 不會觸發 CORS 預檢，Apps Script 才收得到
+    fetch(SYNC.url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ key: SYNC.key, table: o.table, op: o.op, row: sheetRow(o) }) })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+            SYNC.busy = false;
+            if (!d.ok) throw new Error(d.error);
+            SYNC.outbox.shift(); save('outbox', SYNC.outbox);
+            if (SYNC.outbox.length) flush(); else syncDone(d);
+        })
+        .catch(syncFail);
+}
+function syncUi() {
+    var el = $('#wsync'); if (!el) return;
+    if (!syncOn()) { el.textContent = '只存在這台裝置　·　到設定填入同步網址就能和旅伴共用'; return; }
+    var t = SYNC.at ? new Date(SYNC.at) : null, p = SYNC.outbox.length;
+    el.textContent = (SYNC.err ? '⚠ ' + SYNC.err + (p ? '，' + p + ' 筆待上傳' : '') + '　·　' : p ? '上傳中 ' + p + ' 筆　·　' : '已和旅伴同步　·　') +
+        (t ? '最後更新 ' + t.getHours() + ':' + ('0' + t.getMinutes()).slice(-2) : '尚未連上');
+}
+function syncStart() {
+    if (!syncOn()) return syncUi();
+    // 這台裝置第一次同步：把原本只存在本機的記帳補傳上去，不會蓋掉共用帳本
+    if (!load('syncedOnce', false)) {
+        save('syncedOnce', true);
+        S.expenses.forEach(function (x) { if (!SYNC.outbox.some(function (o) { return o.row.id === x.id; })) SYNC.outbox.push({ table: 'expenses', op: 'upsert', row: x }); });
+        save('outbox', SYNC.outbox);
+    }
+    syncUi(); flush();
+}
+setInterval(function () { if (!document.hidden) flush(); }, 10000);
+document.addEventListener('visibilitychange', function () { if (!document.hidden) flush(); });
+window.addEventListener('online', flush);
+function dateOf(n) { return new Date(TRIP_START.getFullYear(), TRIP_START.getMonth(), TRIP_START.getDate() + n - 1); }
+function pad2(n) { return (n < 10 ? '0' : '') + n; }
+function fmt(n) { return Math.round(n).toLocaleString('en-US'); }
+var imgFail = "this.outerHTML='<div class=&quot;' + this.className + ' fallback&quot;>圖片需連線載入</div>'";
+
+// ======== 行程資料整理 ========
+var EMOJI_RE = /^[\s☀-➿⬀-⯿️‍\uD83C-􏰀-\uDFFF]+/;
+var SPOT_KEYS = [
+    ['機場', 0], ['瑞宇', 1], ['偶來市場', 2], ['冬柏', 3], ['城板岳', 4], ['杜鵑', 5], ['白鹿潭', 6],
+    ['山房山', 7], ['橘花', 8], ['1100', 9], ['E-MART', 10], ['吾羅洞', 11], ['三代', 12], ['東門', 13], ['樹木園', 14], ['林木園', 14]
+];
+DAYS.forEach(function (d) {
+    var m = d.title.match(/DAY \d：(\d{4})\/(\d{2})\/(\d{2}) \((.)\)\s*(.*)$/);
+    var parts = (m ? m[5] : d.title).split('．');
+    d.headline = parts[0];
+    d.tags = parts.slice(1);
+    d.rows.forEach(function (r, i) {
+        var raw = r.title;
+        var lead = (raw.match(EMOJI_RE) || [''])[0];
+        r.name = raw.replace(EMOJI_RE, '').replace(/^(午餐|晚餐|早餐)：/, function (x) { r.meal = x.slice(0, 2); return ''; });
+        r.kind = /午餐|晚餐|早餐/.test(raw) || /[🍜🍔]/u.test(lead) ? '美食'
+            : /[🛒🛍]/u.test(lead) ? '購物'
+            : /[🚨⚠]/u.test(lead) ? '注意'
+            : /[🌟🚀]/u.test(lead) ? '景點'
+            : /[🏨]/u.test(lead) || /Check-in/.test(raw) ? '住宿'
+            : /[✈]/u.test(lead) ? '航班' : '';
+        var tm = r.time.split(/\s*[-~]\s*/);
+        r.t0 = tm[0]; r.t1 = tm[1] || '';
+        r.id = d.n + '-' + i;
+        r.spot = -1;
+        var hay = raw + ' ' + r.place;
+        for (var k = 0; k < SPOT_KEYS.length; k++) {
+            if (hay.indexOf(SPOT_KEYS[k][0]) >= 0) { r.spot = SPOT_KEYS[k][1]; break; }
+        }
+        r.day = d.n;
+    });
+    // 餐食拆成 早／午／晚
+    d.meals = []; d.stay = '';
+    d.meta.forEach(function (mt) {
+        if (/餐食/.test(mt[0])) {
+            var re = /【(.+?)】([^【]*)/g, x;
+            while ((x = re.exec(mt[1]))) d.meals.push([x[1], x[2].replace(/\s*\/\s*$/, '').trim()]);
+        } else if (/住宿/.test(mt[0])) d.stay = mt[1];
+    });
+});
+function rowById(id) { var p = id.split('-'); return DAYS[p[0] - 1].rows[+p[1]]; }
+function tagHtml(k) { return k ? '<span class="tag ' + ({ '美食': 'food', '注意': 'warn', '景點': 'spot' }[k] || '') + '">' + k + '</span>' : ''; }
+
+// ======== 天數切換 ========
+function renderStrips() {
+    $$('[data-strip]').forEach(function (el) {
+        el.innerHTML = DAYS.map(function (d) {
+            var dt = dateOf(d.n);
+            return '<button class="dcard' + (d.n === S.day ? ' on' : '') + '" data-day="' + d.n + '">' +
+                '<span class="dn">D' + d.n + '</span><div class="wd">' + WD[dt.getDay()] + '</div>' +
+                '<div class="dd">' + pad2(dt.getDate()) + '</div><div class="mm">' + pad2(dt.getMonth() + 1) + '月</div></button>';
+        }).join('');
+        var on = $('.dcard.on', el);
+        if (on) el.scrollTo({ left: Math.max(0, on.offsetLeft - el.clientWidth / 2 + on.clientWidth / 2), behavior: 'smooth' });
+    });
+    var r = $('[data-range]');
+    r.value = S.day;
+    r.style.setProperty('--p', ((S.day - 1) / 5 * 100) + '%');
+    $('[data-scrub-lbl]').textContent = 'Day ' + S.day + ' / ' + DAYS.length;
+}
+function setDay(n) {
+    n = Math.min(DAYS.length, Math.max(1, n));
+    if (n === S.day) return;
+    S.day = n;
+    renderDay();
+}
+
+function themeHtml(d) {
+    var dt = dateOf(d.n);
+    return '<div class="dlabel">Day ' + d.n + ' · ' + (dt.getMonth() + 1) + '/' + dt.getDate() + '（' + WD_ZH[dt.getDay()] + '）</div>' +
+        '<h2>' + esc(d.headline) + '</h2><div class="tags">' + d.tags.map(function (t) { return '<span class="tag">' + esc(t) + '</span>'; }).join('') + '</div>' +
+        (d.highlight ? '<p>' + esc(d.highlight.replace(/^💡\s*/, '')) + '</p>' : '');
+}
+function rowLi(r, thumb) {
+    var sub = [];
+    if (r.place) sub.push(esc(r.place.replace(/\s*\(.*?\)\s*$/, '').replace(/\s*（.*$/, '')));
+    return '<li><button data-' + (thumb ? 'row' : 'goto') + '="' + r.id + '">' +
+        '<span class="t">' + r.t0 + (r.t1 ? '<small>– ' + r.t1 + '</small>' : '') + '</span>' +
+        '<span><span class="nm">' + esc(r.name) + '</span><div class="pl">' + tagHtml(r.meal || r.kind) + sub.join('<span class="dot">·</span>') + '</div></span>' +
+        (thumb && r.img ? '<img class="th" src="' + esc(r.img) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="' + imgFail + '">' : '<span></span>') +
+        '</button></li>';
+}
+function metaHtml(d) {
+    return '<div class="card-h"><svg class="i"><use href="#i-bed"/></svg><h3>餐食與住宿</h3></div>' +
+        '<div class="meals">' + d.meals.map(function (m) { return '<div class="meal"><b>' + esc(m[0]) + '</b><span>' + esc(m[1]) + '</span></div>'; }).join('') + '</div>' +
+        (d.stay ? '<div class="stay">' + d.stay + '</div>' : '');
+}
+function renderDay() {
+    var d = DAYS[S.day - 1];
+    renderStrips();
+    $$('[data-theme]').forEach(function (el) { el.innerHTML = themeHtml(d); });
+    $$('[data-meta]').forEach(function (el) { el.innerHTML = metaHtml(d); });
+    var dt = dateOf(d.n), today = new Date();
+    var isToday = today.toDateString() === dt.toDateString();
+    $('[data-today-h]').textContent = isToday ? '今日行程' : 'Day ' + d.n + ' 行程';
+    var first = d.rows.slice(0, 3).map(function (r) { return rowLi(r, false); }).join('');
+    var rest = d.rows.length - 3;
+    $('[data-home-tl]').innerHTML = first + (rest > 0 ? '<li><button class="tl-more" data-go="plan">還有 ' + rest + ' 個行程</button></li>' : '');
+    $('[data-plan-title]').innerHTML = 'Day ' + d.n + '<small>行程</small>';
+    renderFlow(d);
+    $$('[data-ex]').forEach(function (el) { el.innerHTML = exHtml(d.n); });
+    save('day', S.day);
+}
+
+// ======== 行程頁：交通列、可展開卡 ========
+function legOf(r) {
+    if (!r.drv) return null;
+    var mode = /🚌/u.test(r.drv) ? 'bus' : /🚶/u.test(r.drv) ? 'walk' : 'taxi';
+    var mins = (r.drv.match(/約\s*(\d+)\s*分/) || [])[1];
+    var km = (r.drv.match(/([\d.]+)\s*km/i) || [])[1];
+    var text = r.drv.replace(EMOJI_RE, '').replace(/約\s*\d+\s*分/, '').replace(/[（(][^）)]*km[^）)]*[）)]/i, '').replace(/\s*・\s*$/, '').trim();
+    return { mode: mode, mins: mins ? +mins : 0, km: km, text: text };
+}
+var MODE_NAME = { taxi: '計程車', bus: '公車', walk: '步行' };
+function legHtml(g) {
+    return '<div class="leg"><span class="mode ' + g.mode + '">' + icon(g.mode === 'bus' ? 'bus' : g.mode === 'walk' ? 'walk' : 'taxi') + '</span>' +
+        '<span><b>' + MODE_NAME[g.mode] + '</b>' + esc(g.text) + '</span>' +
+        '<span class="mins">' + (g.mins ? g.mins + '<small>分</small>' : '') + (g.km ? '<small style="display:block;text-align:right">' + g.km + ' km</small>' : '') + '</span></div>';
+}
+function stopHtml(r) {
+    var links = r.links.map(function (l) {
+        return '<a href="' + esc(l[0]) + '" target="_blank" rel="noopener">' + icon(/google|kakao|naver/i.test(l[0]) ? 'pin' : 'ext') + esc(l[1].replace(/^[📍🗺️🔗\s]+/u, '')) + '</a>';
+    }).join('');
+    var saved = S.saved.indexOf(r.id) >= 0;
+    return '<div class="stop" id="stop-' + r.id + '">' +
+        '<button class="stop-h" data-stop="' + r.id + '"><span class="tchip">' + r.t0 + '</span>' +
+        '<span>' + tagHtml(r.meal || r.kind) + '<span class="nm" style="display:block">' + esc(r.name) + '</span></span>' +
+        '<svg class="i chev"><use href="#i-right"/></svg></button>' +
+        '<div class="stop-b">' +
+        (r.img ? '<img class="ph" src="' + esc(r.img) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="' + imgFail + '">' + (r.cap ? '<p class="cap">' + esc(r.cap) + '</p>' : '') : '') +
+        '<div class="lbl">簡介／備註　<span style="font-family:var(--latin);color:var(--muted)">' + esc(r.time) + '</span></div>' +
+        '<div class="desc" style="padding-top:0">' + r.desc + '</div>' +
+        '<div class="place"><strong>' + esc(r.place) + '</strong>' + r.placeNote + '</div>' +
+        '<div class="btns">' + (r.spot >= 0 ? '<button class="dark" data-focus="' + r.spot + '">' + icon('map') + '在地圖上看</button>' : '') + links +
+        '<button data-save="' + r.id + '">' + icon('mark') + (saved ? '已收藏' : '收藏') + '</button></div>' +
+        '</div></div>';
+}
+function renderFlow(d) {
+    var mins = 0;
+    $('[data-flow]').innerHTML = d.rows.map(function (r, i) {
+        var g = legOf(r), L2 = LEG_BY[d.n + '-' + i];
+        if (L2 && !g) g = { mode: 'taxi', mins: Math.max(1, L2.drive), km: String(L2.km), text: L2.frm + '→' + L2.to };
+        if (g) mins += g.mins;
+        return (g ? (L2 ? '<button class="legbtn" data-leg="' + L2.i + '">' + legHtml(g) + legChips(L2) + '</button>' : legHtml(g)) : '') + stopHtml(r);
+    }).join('');
+    var krw = DAY_COST[d.n] || 0;
+    $('[data-stats]').innerHTML =
+        '<div><span>交通時間</span><b>' + (mins >= 60 ? Math.floor(mins / 60) + '<small>時</small>' : '') + (mins % 60) + '<small>分</small></b><em>' + d.rows.filter(legOf).length + ' 段移動</em></div>' +
+        '<div><span>交通花費</span><b>₩' + fmt(krw) + '</b><em>≈ NT$ ' + fmt(krw * S.rate) + '・每人 NT$ ' + fmt(krw * S.rate / headcount()) + '</em></div>';
+}
+function openStop(id, scroll) {
+    var el = document.getElementById('stop-' + id);
+    if (!el) return;
+    var on = scroll ? true : !el.classList.contains('open');
+    el.classList.toggle('open', on);
+    if (scroll) setTimeout(function () { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 60);
+}
+
+// ======== 每段交通：計程車／公車／自駕（建置時用官方資料算好） ========
+// 公車：bus.jeju.go.kr 站牌、路線停靠順序與各段平均行駛秒數；計程車：OSRM 道路距離＋濟州官方費率；自駕：OSRM 行車時間
+var LEGS = [{"day": 1, "row": 2, "frm": "濟州國際機場", "to": "瑞宇地方餐廳", "fromPt": [33.5071, 126.4916], "toPt": [33.505, 126.488], "km": 0.9, "drive": 3, "taxi": 4300, "walk": 7, "bus": []}, {"day": 1, "row": 3, "frm": "瑞宇地方餐廳", "to": "樂天超市 濟州店", "fromPt": [33.505, 126.488], "toPt": [33.48235, 126.48234], "km": 4.4, "drive": 7, "taxi": 6200, "walk": null, "bus": [{"num": "902", "variant": "902-1", "type": "관광지순환", "toward": "樂天超市", "board": {"id": 405001478, "kr": "제주국제공항6(노형,연동)", "zh": "濟州國際機場6", "lat": 33.506099, "lng": 126.492756, "walk": 8, "m": 458}, "alight": {"id": 405000014, "kr": "롯데마트[북]", "zh": "樂天超市[北]", "lat": 33.482142, "lng": 126.483213, "walk": 2, "m": 84}, "stops": 2, "ride": 9, "rideSrc": "estimate", "total": 19, "fare": 1200, "fareNote": "一般公車 ₩1,200／人"}, {"num": "800", "variant": "800-3", "type": "리무진", "toward": "濟州世界盃體育場 / 西歸浦巴士客運站", "board": {"id": 405002099, "kr": "제주국제공항5(평화로, 800번)", "zh": "濟州國際機場5(和平路，800路）", "lat": 33.506266, "lng": 126.492862, "walk": 9, "m": 472}, "alight": {"id": 405000014, "kr": "롯데마트[북]", "zh": "樂天超市[北]", "lat": 33.482142, "lng": 126.483213, "walk": 2, "m": 84}, "stops": 3, "ride": 9, "rideSrc": "estimate", "total": 20, "fare": 4500, "fareNote": "機場利木津分段計費（JEJU.html：機場→西歸浦 ₩5,500、→中文 ₩4,500）"}, {"num": "801", "variant": "801-1", "type": "리무진", "toward": "西歸浦換乘車站(西歸浦登記所)", "board": {"id": 405002099, "kr": "제주국제공항5(평화로, 800번)", "zh": "濟州國際機場5(和平路，800路）", "lat": 33.506266, "lng": 126.492862, "walk": 9, "m": 472}, "alight": {"id": 405000014, "kr": "롯데마트[북]", "zh": "樂天超市[北]", "lat": 33.482142, "lng": 126.483213, "walk": 2, "m": 84}, "stops": 3, "ride": 9, "rideSrc": "estimate", "total": 20, "fare": 4500, "fareNote": "機場利木津分段計費（JEJU.html：機場→西歸浦 ₩5,500、→中文 ₩4,500）"}]}, {"day": 1, "row": 4, "frm": "樂天超市 濟州店", "to": "西歸浦住宿", "fromPt": [33.48235, 126.48234], "toPt": [33.2497, 126.561], "km": 43.4, "drive": 51, "taxi": 40900, "walk": null, "bus": [{"num": "801", "variant": "801-5", "type": "리무진", "toward": "西歸浦換乘車站(西歸浦登記所)", "board": {"id": 405000014, "kr": "롯데마트[북]", "zh": "樂天超市[北]", "lat": 33.482142, "lng": 126.483213, "walk": 2, "m": 84}, "alight": {"id": 406001230, "kr": "서귀포환승정류장(서귀포등기소)", "zh": "西歸浦換乘車站(西歸浦登記所)", "lat": 33.253126, "lng": 126.559794, "walk": 7, "m": 397}, "stops": 12, "ride": 66, "rideSrc": "estimate", "total": 75, "fare": 5500, "fareNote": "機場利木津分段計費（JEJU.html：機場→西歸浦 ₩5,500、→中文 ₩4,500）"}, {"num": "800-1", "variant": "800-51", "type": "리무진", "toward": "西歸浦換乘車站(西歸浦登記所)", "board": {"id": 405000014, "kr": "롯데마트[북]", "zh": "樂天超市[北]", "lat": 33.482142, "lng": 126.483213, "walk": 2, "m": 84}, "alight": {"id": 406001230, "kr": "서귀포환승정류장(서귀포등기소)", "zh": "西歸浦換乘車站(西歸浦登記所)", "lat": 33.253126, "lng": 126.559794, "walk": 7, "m": 397}, "stops": 12, "ride": 66, "rideSrc": "estimate", "total": 75, "fare": 5500, "fareNote": "機場利木津分段計費（JEJU.html：機場→西歸浦 ₩5,500、→中文 ₩4,500）"}, {"num": "901", "variant": "901-1", "type": "관광지순환", "toward": "西歸浦換乘車站(西歸浦登記所)", "board": {"id": 405000014, "kr": "롯데마트[북]", "zh": "樂天超市[北]", "lat": 33.482142, "lng": 126.483213, "walk": 2, "m": 84}, "alight": {"id": 406001230, "kr": "서귀포환승정류장(서귀포등기소)", "zh": "西歸浦換乘車站(西歸浦登記所)", "lat": 33.253126, "lng": 126.559794, "walk": 7, "m": 397}, "stops": 12, "ride": 66, "rideSrc": "estimate", "total": 75, "fare": 1200, "fareNote": "一般公車 ₩1,200／人"}]}, {"day": 2, "row": 2, "frm": "西歸浦每日偶來市場", "to": "冬柏森林", "fromPt": [33.2502, 126.5636], "toPt": [33.2876, 126.645], "km": 11.0, "drive": 12, "taxi": 11500, "walk": null, "bus": []}, {"day": 2, "row": 3, "frm": "冬柏森林", "to": "西歸浦住宿", "fromPt": [33.2876, 126.645], "toPt": [33.2497, 126.561], "km": 11.3, "drive": 13, "taxi": 11800, "walk": null, "bus": []}, {"day": 3, "row": 0, "frm": "西歸浦住宿", "to": "城板岳登山口", "fromPt": [33.2497, 126.561], "toPt": [33.385, 126.6191], "km": 20.7, "drive": 32, "taxi": 19300, "walk": null, "bus": [{"num": "281", "variant": "281-2", "type": "일반간선", "toward": "濟州巴士客運站（終點站）", "board": {"id": 406001146, "kr": "서귀포시 구 버스터미널", "zh": "西歸浦原長途客運站", "lat": 33.251845, "lng": 126.560259, "walk": 4, "m": 248}, "alight": {"id": 405001369, "kr": "성판악[동]", "zh": "城板岳[東]", "lat": 33.385117, "lng": 126.62049, "walk": 2, "m": 130}, "stops": 24, "ride": 40, "rideSrc": "estimate", "total": 46, "fare": 1200, "fareNote": "一般公車 ₩1,200／人"}, {"num": "182", "variant": "182-5", "type": "급행", "toward": "濟州國際機場(下車専用)", "board": {"id": 406000155, "kr": "중앙로터리/제주권역재활병원[동]", "zh": "中央環島/濟州區域康復醫院[東]", "lat": 33.252972, "lng": 126.56138, "walk": 7, "m": 366}, "alight": {"id": 405001369, "kr": "성판악[동]", "zh": "城板岳[東]", "lat": 33.385117, "lng": 126.62049, "walk": 2, "m": 130}, "stops": 5, "ride": 39, "rideSrc": "estimate", "total": 48, "fare": null, "fareNote": "急行巴士依距離計費（約 ₩2,000 起），以刷卡為準"}, {"num": "182-1", "variant": "182-71", "type": "급행", "toward": "濟州國際機場(下車専用)", "board": {"id": 406000155, "kr": "중앙로터리/제주권역재활병원[동]", "zh": "中央環島/濟州區域康復醫院[東]", "lat": 33.252972, "lng": 126.56138, "walk": 7, "m": 366}, "alight": {"id": 405001369, "kr": "성판악[동]", "zh": "城板岳[東]", "lat": 33.385117, "lng": 126.62049, "walk": 2, "m": 130}, "stops": 5, "ride": 39, "rideSrc": "estimate", "total": 48, "fare": null, "fareNote": "急行巴士依距離計費（約 ₩2,000 起），以刷卡為準"}]}, {"day": 3, "row": 5, "frm": "城板岳登山口", "to": "西歸浦住宿", "fromPt": [33.385, 126.6191], "toPt": [33.2497, 126.561], "km": 20.7, "drive": 32, "taxi": 19300, "walk": null, "bus": [{"num": "281", "variant": "281-1", "type": "일반간선", "toward": "西歸浦客運站", "board": {"id": 406001148, "kr": "성판악[서]", "zh": "城板岳[西]", "lat": 33.384634, "lng": 126.620353, "walk": 2, "m": 123}, "alight": {"id": 406000327, "kr": "중앙동주민센터/청소년문화의집[동]", "zh": "中央洞居民中心/青少年文化之家[東]", "lat": 33.250619, "lng": 126.564753, "walk": 7, "m": 364}, "stops": 23, "ride": 39, "rideSrc": "estimate", "total": 48, "fare": 1200, "fareNote": "一般公車 ₩1,200／人"}, {"num": "181", "variant": "181-1", "type": "급행", "toward": "濟州巴士客運站（終點站）", "board": {"id": 406001148, "kr": "성판악[서]", "zh": "城板岳[西]", "lat": 33.384634, "lng": 126.620353, "walk": 2, "m": 123}, "alight": {"id": 406001230, "kr": "서귀포환승정류장(서귀포등기소)", "zh": "西歸浦換乘車站(西歸浦登記所)", "lat": 33.253126, "lng": 126.559794, "walk": 7, "m": 397}, "stops": 5, "ride": 39, "rideSrc": "estimate", "total": 48, "fare": null, "fareNote": "急行巴士依距離計費（約 ₩2,000 起），以刷卡為準"}]}, {"day": 4, "row": 0, "frm": "西歸浦住宿", "to": "山房山碳酸溫泉", "fromPt": [33.2497, 126.561], "toPt": [33.2489, 126.2987], "km": 26.7, "drive": 30, "taxi": 25000, "walk": null, "bus": []}, {"day": 4, "row": 1, "frm": "山房山碳酸溫泉", "to": "橘花閣樓咖啡", "fromPt": [33.2489, 126.2987], "toPt": [33.27, 126.42], "km": 13.1, "drive": 17, "taxi": 13100, "walk": null, "bus": []}, {"day": 4, "row": 2, "frm": "橘花閣樓咖啡", "to": "漢拏山 1100 高地", "fromPt": [33.27, 126.42], "toPt": [33.3577, 126.4627], "km": 17.6, "drive": 26, "taxi": 16700, "walk": null, "bus": []}, {"day": 4, "row": 3, "frm": "漢拏山 1100 高地", "to": "濟州市區（原租借用品店）", "fromPt": [33.3577, 126.4627], "toPt": [33.48235, 126.48234], "km": 18.0, "drive": 21, "taxi": 17000, "walk": null, "bus": [{"num": "240", "variant": "240-4", "type": "일반간선", "toward": "濟州巴士客運站（終點站）", "board": {"id": 406001109, "kr": "1100고지휴게소[북]", "zh": "1100高地休息區[北]", "lat": 33.357994, "lng": 126.463071, "walk": 1, "m": 47}, "alight": {"id": 405000517, "kr": "제주제일고등학교[동]", "zh": "濟州第一高中[東]", "lat": 33.480083, "lng": 126.481967, "walk": 5, "m": 254}, "stops": 13, "ride": 25, "rideSrc": "estimate", "total": 31, "fare": 1200, "fareNote": "一般公車 ₩1,200／人"}]}, {"day": 4, "row": 4, "frm": "濟州市區（原租借用品店）", "to": "E-MART 新濟州店", "fromPt": [33.48235, 126.48234], "toPt": [33.4848, 126.4802], "km": 0.4, "drive": 0, "taxi": 4300, "walk": 6, "bus": []}, {"day": 4, "row": 5, "frm": "E-MART 新濟州店", "to": "Howard Johnson 連洞", "fromPt": [33.4848, 126.4802], "toPt": [33.490077, 126.4926], "km": 1.8, "drive": 3, "taxi": 4300, "walk": null, "bus": [{"num": "1111", "variant": "1111-1", "type": "관광지순환", "toward": "國際客運碼頭(終點站)", "board": {"id": 405000012, "kr": "노형오거리/이마트[남]", "zh": "老衡五岔路口/易買得[南]", "lat": 33.485033, "lng": 126.480133, "walk": 0, "m": 27}, "alight": {"id": 405000352, "kr": "삼무공원[남]", "zh": "三無公園[南]", "lat": 33.4898, "lng": 126.4924, "walk": 1, "m": 36}, "stops": 2, "ride": 2, "rideSrc": "estimate", "total": 3, "fare": 1200, "fareNote": "一般公車 ₩1,200／人"}, {"num": "240", "variant": "240-4", "type": "일반간선", "toward": "濟州巴士客運站（終點站）", "board": {"id": 405000012, "kr": "노형오거리/이마트[남]", "zh": "老衡五岔路口/易買得[南]", "lat": 33.485033, "lng": 126.480133, "walk": 0, "m": 27}, "alight": {"id": 405002363, "kr": "연동한일시티파크[남]", "zh": "蓮洞韓一城市公寓[南]", "lat": 33.491194, "lng": 126.488802, "walk": 7, "m": 373}, "stops": 3, "ride": 2, "rideSrc": "estimate", "total": 9, "fare": 1200, "fareNote": "一般公車 ₩1,200／人"}, {"num": "471", "variant": "471-1", "type": "지선", "toward": "國際大學換乘停車場", "board": {"id": 405000371, "kr": "노형오거리(한라병원방면)[동]", "zh": "老衡五岔路口[東]", "lat": 33.486674, "lng": 126.480927, "walk": 4, "m": 219}, "alight": {"id": 405000403, "kr": "삼무공원사거리/롯데시티호텔[남]", "zh": "三無公園十字路口/樂天城市酒店[南]", "lat": 33.4899, "lng": 126.488917, "walk": 6, "m": 342}, "stops": 3, "ride": 2, "rideSrc": "official", "total": 12, "fare": 1200, "fareNote": "一般公車 ₩1,200／人"}]}, {"day": 5, "row": 0, "frm": "Howard Johnson 連洞", "to": "吾羅洞冬景秘境", "fromPt": [33.490077, 126.4926], "toPt": [33.447, 126.523], "km": 7.6, "drive": 12, "taxi": 8800, "walk": null, "bus": []}, {"day": 5, "row": 1, "frm": "吾羅洞冬景秘境", "to": "三代麵條", "fromPt": [33.447, 126.523], "toPt": [33.5067, 126.5301], "km": 8.6, "drive": 15, "taxi": 9600, "walk": null, "bus": []}, {"day": 5, "row": 2, "frm": "三代麵條", "to": "濟州東門市場", "fromPt": [33.5067, 126.5301], "toPt": [33.5122, 126.5276], "km": 0.8, "drive": 2, "taxi": 4300, "walk": 12, "bus": []}, {"day": 5, "row": 3, "frm": "濟州東門市場", "to": "漢拏樹木園", "fromPt": [33.5122, 126.5276], "toPt": [33.4695, 126.4926], "km": 7.0, "drive": 10, "taxi": 8400, "walk": null, "bus": []}, {"day": 5, "row": 5, "frm": "漢拏樹木園", "to": "Howard Johnson 連洞", "fromPt": [33.4695, 126.4926], "toPt": [33.490077, 126.4926], "km": 2.9, "drive": 4, "taxi": 5000, "walk": null, "bus": []}, {"day": 6, "row": 0, "frm": "Howard Johnson 連洞", "to": "濟州國際機場", "fromPt": [33.490077, 126.4926], "toPt": [33.5071, 126.4916], "km": 2.6, "drive": 4, "taxi": 4900, "walk": null, "bus": [{"num": "370", "variant": "370-1", "type": "간선", "toward": "濟州大學醫院正門", "board": {"id": 405000352, "kr": "삼무공원[남]", "zh": "三無公園[南]", "lat": 33.4898, "lng": 126.4924, "walk": 1, "m": 36}, "alight": {"id": 405000663, "kr": "제주국제공항3(용담,시청)[북]", "zh": "濟州國際機場3[北]", "lat": 33.506611, "lng": 126.493456, "walk": 3, "m": 180}, "stops": 4, "ride": 6, "rideSrc": "estimate", "total": 10, "fare": 1200, "fareNote": "一般公車 ₩1,200／人"}, {"num": "453", "variant": "453-2", "type": "지선", "toward": "道頭洞", "board": {"id": 405000352, "kr": "삼무공원[남]", "zh": "三無公園[南]", "lat": 33.4898, "lng": 126.4924, "walk": 1, "m": 36}, "alight": {"id": 405000663, "kr": "제주국제공항3(용담,시청)[북]", "zh": "濟州國際機場3[北]", "lat": 33.506611, "lng": 126.493456, "walk": 3, "m": 180}, "stops": 4, "ride": 6, "rideSrc": "estimate", "total": 10, "fare": 1200, "fareNote": "一般公車 ₩1,200／人"}, {"num": "1111", "variant": "1111-2", "type": "관광지순환", "toward": "濟州國際機場3", "board": {"id": 405000352, "kr": "삼무공원[남]", "zh": "三無公園[南]", "lat": 33.4898, "lng": 126.4924, "walk": 1, "m": 36}, "alight": {"id": 405000663, "kr": "제주국제공항3(용담,시청)[북]", "zh": "濟州國際機場3[北]", "lat": 33.506611, "lng": 126.493456, "walk": 3, "m": 180}, "stops": 10, "ride": 6, "rideSrc": "estimate", "total": 10, "fare": 1200, "fareNote": "一般公車 ₩1,200／人"}]}];
+var LEG_BY = {};
+LEGS.forEach(function (g, i) { g.i = i; LEG_BY[g.day + '-' + g.row] = g; });
+var RENT_PER_DAY = 1300, RENT_DAYS = 5, FUEL_NT_PER_L = 40, KM_PER_L = 10;   // JEJU.html 租車參考：約 NT$1,300／天起、油價約 NT$40／公升
+var HEADWAY = { '240': '冬季 50–90 分一班', '600': '約 20 分一班', '281': '班距以 Naver 為準' };
+function fuelNt(km) { return km / KM_PER_L * FUEL_NT_PER_L; }
+function busFare(o) { return o.fare || 2000; }
+function legChips(g) {
+    var b = g.bus[0];
+    return '<div class="legopt">' +
+        '<span>🚕 ₩' + fmt(g.taxi) + '・' + Math.max(1, g.drive) + ' 分</span>' +
+        (b ? '<span class="b">🚌 ' + esc(b.num) + '・約 ' + b.total + ' 分</span>' : (g.walk != null && !g.bus.length && g.km < 1.2 ? '<span>🚶 步行約 ' + g.walk + ' 分</span>' : '<span class="n">🚌 無直達</span>')) +
+        '<span class="more2">怎麼去 ›</span></div>';
+}
+function stopBtn(st) { return '<button class="stopchip" data-busstop="' + st.id + '">' + icon('pin') + esc(st.zh || st.kr) + '</button>'; }
+function openLeg(i) {
+    var g = LEGS[i], N = headcount();
+    var busHtml = g.bus.length ? g.bus.map(function (o, k) {
+        var fare = busFare(o);
+        return '<div class="busopt">' +
+            '<div class="busnum"><b>' + esc(o.num) + '</b><span>' + esc(o.type || '公車') + (o.toward ? '・往 ' + esc(o.toward) : '') + '</span>' + (k === 0 ? '<em>最快</em>' : '') + '</div>' +
+            '<ol class="steps">' +
+            '<li><span>步行約 ' + Math.max(1, o.board.walk) + ' 分（' + o.board.m + ' m）到</span>' + stopBtn(o.board) + '<small>' + esc(o.board.kr) + '</small></li>' +
+            '<li><span>搭 <b>' + esc(o.num) + '</b> 號，坐 ' + o.stops + ' 站、車上約 <b>' + o.ride + ' 分</b>' + (o.rideSrc === 'official' ? '' : '<small>依兩站間道路行車時間 ×1.3 估算</small>') + '</span></li>' +
+            '<li><span>在這站下車，再步行約 ' + Math.max(1, o.alight.walk) + ' 分（' + o.alight.m + ' m）</span>' + stopBtn(o.alight) + '<small>' + esc(o.alight.kr) + '</small></li>' +
+            '</ol>' +
+            '<div class="busfoot"><span>合計約 <b>' + o.total + ' 分</b>（不含等車' + (HEADWAY[o.num] ? '・' + HEADWAY[o.num] : '') + '）</span>' +
+            '<span>' + (o.fare ? '₩' + fmt(o.fare) : '約 ₩2,000 起') + '／人 × ' + N + ' ＝ ₩' + fmt(fare * N) + '</span></div>' +
+            '<p class="note" style="margin-top:4px">' + esc(o.fareNote) + '</p></div>';
+    }).join('') : '<p class="note">起點或終點 500 m 內沒有直達公車（需轉乘或根本沒有路線），這段建議叫車。</p>';
+    openSheet(
+        '<div class="when" style="margin-top:6px">Day ' + g.day + ' · 交通</div>' +
+        '<h2>' + esc(g.frm) + ' → ' + esc(g.to) + '</h2>' +
+        '<div class="drv">道路距離 ' + g.km + ' km・開車約 ' + Math.max(1, g.drive) + ' 分</div>' +
+        '<div class="mode-card"><div class="mode-h">' + icon('taxi') + '<b>計程車</b><span>₩' + fmt(g.taxi) + ' 全車</span></div>' +
+        '<p>約 ' + Math.max(1, g.drive) + ' 分・≈ NT$' + fmt(g.taxi * S.rate) + '・' + N + ' 人均攤每人 NT$' + fmt(g.taxi * S.rate / N) + '</p>' +
+        '<p class="note">依濟州官方費率（基本 ₩4,300／2 km，之後每 126 m ₩100）估算，未含塞車時間運價、深夜 20% 加成與叫車費。</p></div>' +
+        '<div class="mode-card"><div class="mode-h">' + icon('bus') + '<b>公車</b><span>' + (g.bus.length ? g.bus.length + ' 條直達路線' : '無直達') + '</span></div>' + busHtml +
+        (g.bus.length ? '<p class="note">路線、站牌與停靠順序來自濟州公車資訊網（bus.jeju.go.kr）；只列 500 m 內可直達、白天有開的路線。出發前請用 Naver Map 對當天班次。</p>' : '') + '</div>' +
+        '<div class="mode-card"><div class="mode-h">' + icon('car') + '<b>租車自駕</b><span>油錢約 NT$' + fmt(fuelNt(g.km)) + '</span></div>' +
+        '<p>開車約 ' + Math.max(1, g.drive) + ' 分；租金另計（約 NT$' + fmt(RENT_PER_DAY) + '／天起），停車費依地點。</p></div>' +
+        '<div class="btns"><button class="dark" data-legmap="' + i + '">' + icon('map') + '在地圖上看上下車站</button>' +
+        '<a href="https://map.naver.com/p/directions/' + g.fromPt[1] + ',' + g.fromPt[0] + ',' + encodeURIComponent(g.frm) + '/' + g.toPt[1] + ',' + g.toPt[0] + ',' + encodeURIComponent(g.to) + '/-/transit" target="_blank" rel="noopener">' + icon('ext') + 'Naver 大眾運輸路線</a></div>'
+    );
+}
+// 地圖：所有上下車站
+var BUS_STOP_MARKERS = {};
+function addRideStops() {
+    var stops = {};
+    LEGS.forEach(function (g) {
+        g.bus.slice(0, 1).forEach(function (o) {
+            [['board', '上車'], ['alight', '下車']].forEach(function (p) {
+                var st = o[p[0]];
+                var s = stops[st.id] = stops[st.id] || { st: st, uses: [] };
+                s.uses.push('D' + g.day + ' ' + p[1] + '：<b>' + esc(o.num) + '</b>（' + esc(g.frm) + ' → ' + esc(g.to) + '）');
+            });
+        });
+    });
+    Object.keys(stops).forEach(function (id) {
+        var s = stops[id], st = s.st;
+        var m = L.marker([st.lat, st.lng], { icon: L.divIcon({ className: 'ride-pin', html: '<span>' + '🚌' + '</span>', iconSize: [24, 24], iconAnchor: [12, 12] }), zIndexOffset: 400 });
+        m.addTo(MAP).bindPopup('<b>' + esc(st.zh || st.kr) + '</b><br><span style="color:var(--muted)">' + esc(st.kr) + '</span><br>' + s.uses.join('<br>') +
+            '<br><a href="https://map.naver.com/p/search/' + encodeURIComponent(st.kr) + '" target="_blank" rel="noopener">Naver 地圖</a>');
+        (LAYERS.ride = LAYERS.ride || []).push(m);
+        BUS_STOP_MARKERS[id] = m;
+    });
+}
+function focusBusStop(id) {
+    closeSheet(); go('map');
+    setTimeout(function () { var m = BUS_STOP_MARKERS[id]; if (!m) return; MAP.invalidateSize(); MAP.setView(m.getLatLng(), 16); m.openPopup(); }, 80);
+}
+function focusLeg(i) {
+    var g = LEGS[i]; closeSheet(); go('map');
+    setTimeout(function () {
+        MAP.invalidateSize();
+        var pts = [g.fromPt, g.toPt];
+        if (g.bus[0]) pts.push([g.bus[0].board.lat, g.bus[0].board.lng], [g.bus[0].alight.lat, g.bus[0].alight.lng]);
+        MAP.fitBounds(pts, { paddingTopLeft: [40, 40], paddingBottomRight: [40, 90], maxZoom: 16 });
+        if (g.bus[0] && BUS_STOP_MARKERS[g.bus[0].board.id]) BUS_STOP_MARKERS[g.bus[0].board.id].openPopup();
+    }, 80);
+}
+// 費用比較
+function renderCost() {
+    var N = headcount(), rows = [], T = { taxi: 0, bus: 0, fuel: 0, charter: 0 };
+    DAYS.forEach(function (d) {
+        var ls = LEGS.filter(function (g) { return g.day === d.n; });
+        var taxi = 0, bus = 0, fuel = 0, fb = 0;
+        ls.forEach(function (g) {
+            taxi += g.taxi; fuel += fuelNt(g.km);
+            if (g.bus.length) bus += busFare(g.bus[0]) * N;
+            else if (g.km < 1.2) { /* 步行 */ } else { bus += g.taxi; fb++; }
+        });
+        var ch = DAY_COST[d.n] || 0;
+        T.taxi += taxi; T.bus += bus; T.fuel += fuel; T.charter += ch;
+        rows.push('<tr><td class="kr">Day ' + d.n + '</td><td data-label="🚕 全程叫車">₩' + fmt(taxi) + '<small>≈ NT$' + fmt(taxi * S.rate) + '</small></td>' +
+            '<td data-label="🚌 能搭公車就搭">₩' + fmt(bus) + '<small>≈ NT$' + fmt(bus * S.rate) + (fb ? '・其中 ' + fb + ' 段無直達改叫車' : '') + '</small></td>' +
+            '<td data-label="🚗 租車（只算油錢）">NT$' + fmt(fuel) + '</td>' +
+            '<td data-label="🚐 包車版（原方案）">₩' + fmt(ch) + '<small>≈ NT$' + fmt(ch * S.rate) + '</small></td></tr>');
+    });
+    var rent = RENT_PER_DAY * RENT_DAYS + T.fuel;
+    function tot(nt, lbl, note) { return '<div class="cost-tot"><span>' + lbl + '</span><b>NT$' + fmt(nt) + '</b><em>每人 NT$' + fmt(nt / N) + '</em>' + (note ? '<small>' + note + '</small>' : '') + '</div>'; }
+    $('#costPane').innerHTML = '<h2>交通費用比較</h2><p class="bus-note" style="margin-top:0">以這份行程的每一段實際移動（' + LEGS.length + ' 段）試算，全組 ' + N + ' 人；計程車與包車按車計價、公車按人計價。</p>' +
+        '<div class="cost-grid">' +
+        tot(T.bus * S.rate, '🚌 能搭公車就搭', '無直達的路段改叫車') +
+        tot(T.taxi * S.rate, '🚕 全程叫車', '官方費率試算') +
+        tot(rent, '🚗 租車自駕', RENT_DAYS + ' 天租金 NT$' + fmt(RENT_PER_DAY * RENT_DAYS) + '＋油錢 NT$' + fmt(T.fuel)) +
+        tot(T.charter * S.rate, '🚐 包車版', '原方案：D4 包車＋其餘叫車／公車') +
+        '</div>' +
+        '<h3>每日明細</h3><table><tr><th>天</th><th>🚕 全程叫車</th><th>🚌 能搭公車就搭</th><th>🚗 租車（只算油錢）</th><th>🚐 包車版（原方案）</th></tr>' + rows.join('') + '</table>' +
+        '<div class="booksplit"><h4>🚗 租車要另外注意</h4><ul>' +
+        '<li>租金以 JEJU 手冊的「約 NT$1,300／天起」估 ' + RENT_DAYS + ' 天（D1 機場取車、D6 還車），<b>全險、雪鏈、國際駕照另計</b>；3 人含行李建議中型 SUV，實際會更高。</li>' +
+        '<li>油錢以 NT$40／公升、每公升 10 km 估算。</li>' +
+        '<li>冬季下雪時 1100 道路、516 道路常管制，可能只放行裝雪鏈或雪胎的車。</li>' +
+        '<li>D3 爬山日車要在登山口停一整天；市區停車偶爾要找位子。</li></ul></div>' +
+        '<p class="note">匯率 ₩1 = NT$' + S.rate + '（可在設定調整）。公車「約 ₩2,000 起」的急行路線以 ₩2,000 計。</p>';
+    prepTables($('#costPane'));
+}
+
+// ======== 視圖切換 ========
+function go(v, opt) {
+    if (!document.getElementById('v-' + v)) return;
+    S.view = v;
+    $$('.view').forEach(function (el) { el.classList.toggle('on', el.id === 'v-' + v); });
+    $$('#tabbar button').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-go') === v); });
+    window.scrollTo(0, 0);
+    if (v === 'map') initMap();
+    if (v === 'wallet') renderWallet();
+    if (v === 'spots') renderSpots();
+    if (v === 'pack') renderPack();
+    if (v === 'info') { renderFlight(); renderCost(); if (opt) setInfo(opt); }
+    try { history.replaceState(null, '', '#' + v); } catch (e) {}
+    if (v === 'map' && MAP) setTimeout(function () { MAP.invalidateSize(); }, 30);
+}
+
+// ======== 底部面板 ========
+function openSheet(html) {
+    var sh = $('#sheet');
+    sh.innerHTML = '<div class="grab"></div><button class="sheet-x" data-close aria-label="關閉">' + icon('x') + '</button>' + html;
+    sh.scrollTop = 0;
+    sh.classList.add('on'); $('#scrim').classList.add('on');
+    document.body.style.overflow = 'hidden';
+}
+function closeSheet() {
+    $('#sheet').classList.remove('on'); $('#scrim').classList.remove('on');
+    document.body.style.overflow = '';
+}
+
+function openRow(id) {
+    var r = rowById(id), d = DAYS[r.day - 1];
+    var links = r.links.map(function (l) {
+        return '<a href="' + esc(l[0]) + '" target="_blank" rel="noopener">' + icon(/google|kakao|naver/i.test(l[0]) ? 'pin' : 'ext') + esc(l[1].replace(/^[📍🗺️🔗\s]+/u, '')) + '</a>';
+    }).join('');
+    var mapBtn = r.spot >= 0 ? '<button class="dark" data-focus="' + r.spot + '">' + icon('map') + '在地圖上看</button>' : '';
+    var saved = S.saved.indexOf(id) >= 0;
+    openSheet(
+        (r.img ? '<img class="hero" src="' + esc(r.img) + '" alt="" referrerpolicy="no-referrer" onerror="' + imgFail + '">' + (r.cap ? '<p class="cap">' + esc(r.cap) + '</p>' : '') : '<div style="height:30px"></div>') +
+        '<div class="when">Day ' + d.n + ' · ' + esc(r.time) + '</div>' +
+        '<h2>' + esc(r.name) + '</h2>' +
+        (r.meal || r.kind ? '<div style="margin-bottom:8px">' + tagHtml(r.meal || r.kind) + '</div>' : '') +
+        (r.drv ? '<div class="drv">' + esc(r.drv) + '</div>' : '') +
+        '<div class="desc">' + r.desc + '</div>' +
+        '<div class="place"><strong>' + esc(r.place) + '</strong>' + r.placeNote + '</div>' +
+        '<div class="btns">' + mapBtn + links + '<button data-save="' + id + '">' + icon('mark') + (saved ? '已收藏' : '收藏') + '</button></div>'
+    );
+}
+
+// ======== 地圖 ========
+var MAP = null, LAYERS = {}, MARKERS = [], EX_MARKERS = [], picked = [], routeLine = null;
+function initMap() {
+    if (MAP) return;
+    var el = $('#map');
+    if (typeof L === 'undefined') { el.innerHTML = '<div class="fallback" style="height:100%">地圖需要連線載入</div>'; return; }
+    MAP = L.map('map', { zoomControl: true, attributionControl: true }).setView([33.38, 126.53], 10);
+    // OSM 官方圖磚（tile.openstreetmap.org）會擋沒有 Referer 的請求，file:// 直接開檔時整張變成「Access blocked」，
+    // 改用德國 OSM 鏡像；連續載入失敗時退回 OSM France
+    var tiles = L.tileLayer('https://tile.openstreetmap.de/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '&copy; OpenStreetMap' }).addTo(MAP);
+    var tileErrors = 0;
+    tiles.on('tileerror', function () {
+        if (++tileErrors !== 4) return;
+        MAP.removeLayer(tiles);
+        L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '&copy; OpenStreetMap France' }).addTo(MAP);
+    });
+
+    function reg(key, m) { (LAYERS[key] = LAYERS[key] || []).push(m); }
+    SPOTS.forEach(function (s, i) {
+        var lat = s[0], lng = s[1], day = s[2], label = s[3], type = s[4], approx = s[5], m;
+        var rows = [];
+        DAYS.forEach(function (d) { d.rows.forEach(function (r) { if (r.spot === i) rows.push(r); }); });
+        var popup = '<b>' + esc(label) + '</b>' + (day ? '<br>Day ' + day : '') +
+            (approx ? '<br><span style="color:var(--muted)">※ 近似位置，請以實際導航為準</span>' : '') +
+            (rows.length ? '<br><button class="pbtn" data-row="' + rows[0].id + '">看行程細節 ›</button>' : '');
+        if (type === 'stay') {
+            m = L.marker([lat, lng], { icon: L.divIcon({ className: 'stay-pin', html: '🏨', iconSize: [30, 30], iconAnchor: [15, 28] }) });
+            reg('stay', m);
+        } else {
+            m = L.circleMarker([lat, lng], { radius: 9, color: '#FBFDFF', weight: 2.5, fillColor: DAY_COLOR[day] || '#978B7C', fillOpacity: 1 });
+            reg(String(day), m);
+            if (i === 0) reg('6', m); // Day 6 回到機場
+        }
+        m._label = label.split('（')[0];
+        m.addTo(MAP).bindPopup(popup);
+        m.on('click', function () { onPick(m); });
+        MARKERS[i] = m;
+    });
+    BUS_STOPS.forEach(function (b) {
+        var bm = L.circleMarker([b[0], b[1]], { radius: 5, color: '#FBFDFF', weight: 2, fillColor: '#5C7A55', fillOpacity: 1 });
+        bm.addTo(MAP).bindPopup('<b>🚌 ' + esc(b[2]) + '</b><br>' + esc(b[3]) + '（距 Howard Johnson）');
+        reg('bus', bm);
+    });
+    EXCHANGE.forEach(function (x) {
+        var q = encodeURIComponent(x[3]);
+        var em = L.marker([x[0], x[1]], {
+            icon: L.divIcon({ className: 'ex-pin', html: '<span>₩</span>', iconSize: [26, 26], iconAnchor: [13, 13] }),
+            zIndexOffset: 500
+        });
+        em.addTo(MAP).bindPopup('<b>₩ ' + esc(x[2]) + '</b><br><span style="color:var(--muted)">' + esc(x[3]) + '</span><br>' + x[4] +
+            (x[5] ? '<br><span style="color:var(--muted)">※ 位置為近似，請以導航為準</span>' : '') +
+            '<br><a href="https://map.naver.com/p/search/' + q + '" target="_blank" rel="noopener">Naver 地圖</a>　<a href="https://www.google.com/maps/search/?api=1&query=' + q + '" target="_blank" rel="noopener">Google 地圖</a>');
+        reg('ex', em);
+        EX_MARKERS.push(em);
+    });
+    addRideStops();
+    fitAll();
+
+    var chips = [['all', '全部']].concat(DAYS.map(function (d) { return [String(d.n), 'Day ' + d.n]; }), [['ex', '換錢'], ['ride', '搭車站'], ['stay', '住宿'], ['bus', '飯店公車站']]);
+    $('#mapChips').innerHTML = chips.map(function (c, i) {
+        var col = DAY_COLOR[c[0]] || (c[0] === 'ex' ? '#A2835A' : c[0] === 'ride' ? '#155F63' : '');
+        var dot = col ? '<i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:' + col + ';margin-right:6px;vertical-align:1px"></i>' : '';
+        return '<button data-mapk="' + c[0] + '"' + (i === 0 ? ' class="on"' : '') + '>' + dot + c[1] + '</button>';
+    }).join('');
+    $('#routeClear').addEventListener('click', clearRoute);
+}
+function fitAll() {
+    MAP.fitBounds(SPOTS.map(function (s) { return [s[0], s[1]]; }), { paddingTopLeft: [30, 30], paddingBottomRight: [30, 80] });
+}
+function mapFocusKey(k) {
+    $$('#mapChips button').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-mapk') === k); });
+    MAP.closePopup();
+    if (k === 'all') { fitAll(); return; }
+    var arr = LAYERS[k];
+    if (!arr || !arr.length) return;
+    MAP.fitBounds(L.latLngBounds(arr.map(function (m) { return m.getLatLng(); })), { paddingTopLeft: [40, 40], paddingBottomRight: [40, 90], maxZoom: 14 });
+}
+function focusEx(i) {
+    closeSheet();
+    go('map');
+    setTimeout(function () {
+        var m = EX_MARKERS[i]; if (!m) return;
+        MAP.invalidateSize();
+        MAP.setView(m.getLatLng(), 15);
+        m.openPopup();
+    }, 80);
+}
+function exHtml(n) {
+    var d = DAY_EXCHANGE[n]; if (!d) return '';
+    return '<div class="card-h"><span class="ex-dot">₩</span><h3>當日換錢</h3><button class="more" data-go="map" data-mapfilter="ex">全部換錢點<svg class="i"><use href="#i-right"/></svg></button></div>' +
+        '<p class="ex-tip">' + esc(d.tip) + '</p>' +
+        d.pts.map(function (pt) {
+            var x = EXCHANGE[pt[0]], q = encodeURIComponent(x[3]);
+            return '<div class="ex-row"><b>' + esc(x[2]) + '</b><small>' + esc(pt[1]) + '</small>' +
+                '<div class="btns"><button class="dark" data-exfocus="' + pt[0] + '">' + icon('map') + '在地圖上看</button>' +
+                '<a href="https://map.naver.com/p/search/' + q + '" target="_blank" rel="noopener">' + icon('pin') + 'Naver</a>' +
+                '<a href="https://www.google.com/maps/search/?api=1&query=' + q + '" target="_blank" rel="noopener">' + icon('pin') + 'Google</a></div></div>';
+        }).join('');
+}
+function focusSpot(i) {
+    closeSheet();
+    go('map');
+    setTimeout(function () {
+        var m = MARKERS[i]; if (!m) return;
+        MAP.invalidateSize();
+        MAP.setView(m.getLatLng(), 14);
+        m.openPopup();
+    }, 80);
+}
+function markSel(m, on) {
+    if (m.setStyle) m.setStyle(on ? { color: '#0F2036', weight: 4 } : { color: '#FBFDFF', weight: 2.5 });
+}
+function routeMsg(html) { $('#routeMsg').innerHTML = html; $('#routeClear').hidden = !picked.length; }
+function clearRoute() {
+    if (routeLine) { MAP.removeLayer(routeLine); routeLine = null; }
+    picked.forEach(function (m) { markSel(m, false); });
+    picked = [];
+    routeMsg('點任兩個地點，就會畫出路線並估算車程');
+}
+function onPick(m) {
+    if (picked.length >= 2) clearRoute();
+    picked.push(m); markSel(m, true);
+    if (picked.length === 1) { routeMsg('起點：<b>' + esc(m._label) + '</b>，再點另一個地點'); return; }
+    var a = picked[0], b = picked[1], A = a.getLatLng(), B = b.getLatLng();
+    routeMsg('計算 <b>' + esc(a._label) + '</b> → <b>' + esc(b._label) + '</b> 中…');
+    fetch('https://router.project-osrm.org/route/v1/driving/' + A.lng + ',' + A.lat + ';' + B.lng + ',' + B.lat + '?overview=full&geometries=geojson')
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+            if (d.code !== 'Ok' || !d.routes.length) { routeMsg('查無路線，請換兩點再試'); return; }
+            var rt = d.routes[0];
+            if (routeLine) MAP.removeLayer(routeLine);
+            routeLine = L.polyline(rt.geometry.coordinates.map(function (c) { return [c[1], c[0]]; }), { color: '#0F2036', weight: 5, opacity: .8 }).addTo(MAP);
+            MAP.fitBounds(routeLine.getBounds(), { padding: [50, 50] });
+            routeMsg('<b>' + esc(a._label) + '</b> → <b>' + esc(b._label) + '</b>：約 <b>' + Math.round(rt.duration / 60) + ' 分</b>・' + (rt.distance / 1000).toFixed(1) + ' km（行車概估）');
+        })
+        .catch(function () { routeMsg('連線失敗，請稍後再試'); });
+}
+
+// ======== 景點 ========
+function allRows() { var a = []; DAYS.forEach(function (d) { a = a.concat(d.rows); }); return a; }
+function renderSpots() {
+    var filters = ['全部', '景點', '美食', '購物', '收藏'];
+    $('#spotChips').innerHTML = filters.map(function (f) { return '<button data-sf="' + f + '"' + (f === S.spotFilter ? ' class="on"' : '') + '>' + f + '</button>'; }).join('');
+    var list = allRows().filter(function (r) {
+        if (S.spotFilter === '收藏') return S.saved.indexOf(r.id) >= 0;
+        if (!r.img) return false;
+        if (S.spotFilter === '全部') return r.kind !== '航班';
+        return (r.meal ? '美食' : r.kind) === S.spotFilter;
+    });
+    $('#spotGrid').innerHTML = list.length ? list.map(function (r) {
+        var on = S.saved.indexOf(r.id) >= 0;
+        return '<div class="scard"><button data-row="' + r.id + '" style="display:block;width:100%;text-align:left">' +
+            (r.img ? '<img src="' + esc(r.img) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="' + imgFail + '">' : '<div class="noimg"></div>') +
+            '<div class="bd"><div class="dn">Day ' + r.day + ' · ' + r.t0 + '</div><b>' + esc(r.name) + '</b><small>' + esc(r.place) + '</small></div></button>' +
+            '<button class="fav' + (on ? ' on' : '') + '" data-save="' + r.id + '" aria-label="收藏">' + icon('mark') + '</button></div>';
+    }).join('') : '';
+    if (!list.length) $('#spotGrid').insertAdjacentHTML('afterend', '');
+    var empty = $('#spotEmpty');
+    if (!list.length && !empty) $('#spotGrid').insertAdjacentHTML('afterend', '<p class="empty" id="spotEmpty">還沒有收藏，點卡片右上角的書籤就能加入</p>');
+    if (list.length && empty) empty.remove();
+}
+function toggleSave(id) {
+    var i = S.saved.indexOf(id);
+    if (i >= 0) S.saved.splice(i, 1); else S.saved.push(id);
+    save('saved', S.saved);
+    if (S.view === 'spots') renderSpots();
+    $$('[data-save="' + id + '"]').forEach(function (b) {
+        if (b.classList.contains('fav')) b.classList.toggle('on', i < 0);
+        else b.innerHTML = icon('mark') + (i < 0 ? '已收藏' : '收藏');
+    });
+}
+
+// ======== 記帳分帳 ========
+// 成員可以是「一家人」：n＝人數，公帳花費依人數比例分攤；dep＝先繳進公帳的訂金（₩）
+function members() { return S.members; }
+function headcount() { return S.members.reduce(function (s, m) { return s + (+m.n || 0); }, 0) || 1; }
+function toTwd(x) { return x.cur === 'KRW' ? x.amt * S.rate : x.amt; }
+function memberName(id) { if (id === 'pool') return '公帳'; var m = S.members.filter(function (x) { return x.id === id; })[0]; return m ? m.name : '（已刪除）'; }
+function settlement() {
+    var total = S.expenses.reduce(function (s, x) { return s + toTwd(x); }, 0), N = headcount();
+    var depTotal = 0, poolSpent = 0;
+    S.expenses.forEach(function (x) { if ((x.payer || 'pool') === 'pool') poolSpent += toTwd(x); });
+    var rows = S.members.map(function (m) {
+        var dep = (+m.dep || 0) * S.rate; depTotal += dep;
+        var adv = S.expenses.filter(function (x) { return x.payer === m.id; }).reduce(function (s, x) { return s + toTwd(x); }, 0);
+        var share = total * (+m.n || 0) / N;
+        return { m: m, dep: dep, adv: adv, share: share, bal: dep + adv - share };
+    });
+    return { total: total, rows: rows, pool: depTotal - poolSpent };
+}
+function renderWallet() {
+    var st = settlement(), total = st.total, N = headcount();
+    var budget = (BUDGET_PP[Math.min(4, Math.max(2, N))] || 12000) * N;
+    var pct = Math.min(100, total / budget * 100);
+    $('#wsum').innerHTML = '<div class="lbl">Spent · 公帳總花費</div><div class="big"><small>NT$</small>' + fmt(total) + '</div>' +
+        '<div style="font-size:13px;color:rgba(248,244,234,.78)">≈ ₩ ' + fmt(total / S.rate) + '　·　每人 NT$ ' + fmt(total / N) + '　·　' + N + ' 人</div>' +
+        '<div class="bar"><i class="' + (total > budget ? 'over' : '') + '" style="width:' + pct + '%"></i></div>' +
+        '<div class="row" style="margin-top:8px"><span>預算 NT$ ' + fmt(budget) + '</span><span>' + (total > budget ? '超出 NT$ ' + fmt(total - budget) : '剩 NT$ ' + fmt(budget - total)) + '</span></div>';
+
+    $('#wsettle').innerHTML = '<div class="card-h"><svg class="i"><use href="#i-wallet"/></svg><h3>結算・多退少補</h3></div>' +
+        (S.members.length ? st.rows.map(function (r) {
+            var v = Math.round(r.bal);
+            return '<div class="settle"><b style="font-weight:500">' + esc(r.m.name) + ' <span class="tag">' + r.m.n + ' 人</span></b>' +
+                '<span class="v ' + (v < 0 ? 'pay' : v > 0 ? 'get' : '') + '">' + (v < 0 ? '補 ' : v > 0 ? '退 ' : '') + 'NT$' + fmt(Math.abs(v)) + '</span>' +
+                '<small>應分攤 NT$' + fmt(r.share) + '　·　訂金 NT$' + fmt(r.dep) + (r.adv ? '　·　代墊 NT$' + fmt(r.adv) : '') + '</small></div>';
+        }).join('') + '<p class="note">公帳目前餘額 ₩' + fmt(st.pool / S.rate) + '（≈ NT$' + fmt(st.pool) + '）。花費依各家人數比例分攤；個人自己買的東西不用記進來。</p>'
+            : '<p class="empty" style="margin:10px 0">先在下方加入成員</p>');
+
+    $('#wmembers').innerHTML = '<div class="card-h"><svg class="i"><use href="#i-bed"/></svg><h3>成員・人數與訂金</h3></div>' +
+        '<div class="mem">' + S.members.map(function (m) { return '<span>' + esc(m.name) + '<button data-mdel="' + m.id + '" aria-label="移除">' + icon('x') + '</button></span>'; }).join('') + '</div>' +
+        '<div class="addrow"><input class="input" id="mNew" placeholder="輸入名字，例如：林家"><button id="mAdd">加入成員</button></div>' +
+        (S.members.length ? '<div class="mtable"><div class="mrow h"><span>成員</span><span style="text-align:right">人數</span><span style="text-align:right">訂金（₩）</span></div>' +
+            S.members.map(function (m) {
+                return '<div class="mrow"><b>' + esc(m.name) + '</b><input class="input" type="number" inputmode="numeric" min="1" data-mf="' + m.id + '.n" value="' + m.n + '">' +
+                    '<input class="input" type="number" inputmode="numeric" min="0" data-mf="' + m.id + '.dep" value="' + (m.dep || 0) + '"></div>';
+            }).join('') + '</div><p class="note">總人數 ' + N + ' 人　·　訂金總額 ₩' + fmt(S.members.reduce(function (s, m) { return s + (+m.dep || 0); }, 0)) + '</p>' : '');
+
+    var byCat = {};
+    S.expenses.forEach(function (x) { byCat[x.cat] = (byCat[x.cat] || 0) + toTwd(x); });
+    var max = Math.max.apply(null, [1].concat(CATS.map(function (c) { return byCat[c] || 0; })));
+    $('#wcats').innerHTML = '<div class="card-h"><svg class="i"><use href="#i-wallet"/></svg><h3>分類統計</h3></div>' +
+        '<div class="cats">' + CATS.map(function (c) {
+            var v = byCat[c] || 0;
+            return '<div class="cat"><span>' + c + '</span><div class="b"><i style="width:' + (v / max * 100) + '%"></i></div><em>' + fmt(v) + '</em></div>';
+        }).join('') + '</div>' +
+        '<p class="note">預算用 JEJU 手冊「' + Math.min(4, Math.max(2, N)) + ' 人同行每人約 NT$' + fmt(BUDGET_PP[Math.min(4, Math.max(2, N))]) + '」估算（原為自駕版，改包車後每人約需再加 NT$2,000–2,500）。</p>';
+
+    if (!S.expenses.length) {
+        $('#wlist').innerHTML = '<div class="card-h"><svg class="i"><use href="#i-cal"/></svg><h3>明細</h3></div><p class="empty" style="margin:14px 0 4px">還沒有記帳，按上方「記一筆」開始</p>';
+        return;
+    }
+    var groups = {};
+    S.expenses.forEach(function (x) { (groups[x.day] = groups[x.day] || []).push(x); });
+    $('#wlist').innerHTML = '<div class="card-h"><svg class="i"><use href="#i-cal"/></svg><h3>明細</h3></div>' +
+        Object.keys(groups).sort(function (a, b) { return a - b; }).map(function (k) {
+            var dt = dateOf(+k);
+            return '<div class="dayh">Day ' + k + ' · ' + (dt.getMonth() + 1) + '/' + dt.getDate() + '</div><ul class="xlist">' +
+                groups[k].slice().reverse().map(function (x) {
+                    return '<li><span class="n">' + esc(x.note || x.cat) + '<small>' + x.cat + '・' + esc(memberName(x.payer || 'pool')) + (x.payer && x.payer !== 'pool' ? '代墊' : '支出') + '</small></span>' +
+                        '<span class="a">' + (x.cur === 'KRW' ? '₩' : 'NT$') + fmt(x.amt) + (x.cur === 'KRW' ? '<small>≈ NT$' + fmt(toTwd(x)) + '</small>' : '') + '</span>' +
+                        '<button class="del" data-del="' + x.id + '" aria-label="刪除">' + icon('x') + '</button></li>';
+                }).join('') + '</ul>';
+        }).join('');
+}
+function saveMembers() { save('members', S.members); }
+function addMember() {
+    var v = $('#mNew').value.trim(); if (!v) return;
+    var m = { id: 'm' + Date.now().toString(36), name: v, n: 1, dep: 0 };
+    S.members.push(m);
+    saveMembers(); renderWallet(); queue('members', 'upsert', m);
+}
+function delMember(id) {
+    if (S.expenses.some(function (x) { return x.payer === id; })) { alert('這位成員還有代墊紀錄，請先刪除那些明細。'); return; }
+    if (!confirm('移除「' + memberName(id) + '」？')) return;
+    S.members = S.members.filter(function (m) { return m.id !== id; });
+    saveMembers(); renderWallet(); queue('members', 'delete', { id: id });
+}
+document.addEventListener('change', function (e) {
+    var k = e.target.getAttribute && e.target.getAttribute('data-mf');
+    if (!k) return;
+    var p = k.split('.'), m = S.members.filter(function (x) { return x.id === p[0]; })[0];
+    if (!m) return;
+    var v = parseFloat(e.target.value);
+    m[p[1]] = p[1] === 'n' ? Math.max(1, Math.round(v) || 1) : Math.max(0, v || 0);
+    saveMembers(); renderWallet(); queue('members', 'upsert', m);
+});
+function exportCsv() {
+    var st = settlement();
+    var lines = [['日期', '天', '分類', '說明', '付款', '幣別', '金額', '折合台幣']];
+    S.expenses.slice().sort(function (a, b) { return a.day - b.day; }).forEach(function (x) {
+        var dt = dateOf(x.day);
+        lines.push([dt.getFullYear() + '/' + (dt.getMonth() + 1) + '/' + dt.getDate(), 'Day ' + x.day, x.cat, x.note || '', memberName(x.payer || 'pool'), x.cur === 'KRW' ? '₩' : 'NT$', x.amt, Math.round(toTwd(x))]);
+    });
+    lines.push([]);
+    lines.push(['結算', '人數', '訂金(NT$)', '代墊(NT$)', '應分攤(NT$)', '多退少補(NT$)']);
+    st.rows.forEach(function (r) { lines.push([r.m.name, r.m.n, Math.round(r.dep), Math.round(r.adv), Math.round(r.share), Math.round(r.bal)]); });
+    lines.push(['匯率', '₩1 = NT$' + S.rate]);
+    var csv = '﻿' + lines.map(function (l) { return l.map(function (c) { c = String(c); return /[",\n]/.test(c) ? '"' + c.replace(/"/g, '""') + '"' : c; }).join(','); }).join('\r\n');
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    a.download = '濟州記帳.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+}
+function openAdd() {
+    var draft = { cur: 'KRW', cat: '餐飲', day: S.day, payer: 'pool' };
+    openSheet(
+        '<div class="when" style="margin-top:6px">New · 記一筆</div><h2>新增公帳花費</h2>' +
+        '<label class="field"><span>金額</span><div class="amt"><input class="input" id="xAmt" type="number" inputmode="decimal" min="0" placeholder="0"></div></label>' +
+        '<div class="field"><span>幣別</span><div class="seg" data-seg="cur"><button data-v="KRW" class="on">₩ 韓元</button><button data-v="TWD">NT$ 台幣</button></div></div>' +
+        '<div class="field"><span>誰付的</span><div class="seg" data-seg="payer"><button data-v="pool" class="on">公帳</button>' + S.members.map(function (m) { return '<button data-v="' + m.id + '">' + esc(m.name) + ' 代墊</button>'; }).join('') + '</div></div>' +
+        '<div class="field"><span>分類</span><div class="seg" data-seg="cat">' + CATS.map(function (c, i) { return '<button data-v="' + c + '"' + (i === 0 ? ' class="on"' : '') + '>' + c + '</button>'; }).join('') + '</div></div>' +
+        '<div class="field"><span>哪一天</span><div class="seg" data-seg="day">' + DAYS.map(function (d) { return '<button data-v="' + d.n + '"' + (d.n === S.day ? ' class="on"' : '') + '>D' + d.n + '</button>'; }).join('') + '</div></div>' +
+        '<label class="field"><span>說明</span><input class="input" id="xNote" type="text" placeholder="例如：三代麵條午餐"></label>' +
+        '<p class="note" id="xConv"></p>' +
+        '<button class="primary" id="xSave">儲存</button>'
+    );
+    var amt = $('#xAmt');
+    function conv() {
+        var v = parseFloat(amt.value) || 0;
+        $('#xConv').textContent = draft.cur === 'KRW' && v ? '≈ NT$ ' + fmt(v * S.rate) + '（匯率 ₩1 = NT$' + S.rate + '）' : '';
+    }
+    $$('#sheet [data-seg]').forEach(function (seg) {
+        seg.addEventListener('click', function (e) {
+            var b = e.target.closest('button'); if (!b) return;
+            $$('button', seg).forEach(function (x) { x.classList.toggle('on', x === b); });
+            var k = seg.getAttribute('data-seg');
+            draft[k] = k === 'day' ? +b.getAttribute('data-v') : b.getAttribute('data-v');
+            conv();
+        });
+    });
+    amt.addEventListener('input', conv);
+    $('#xSave').addEventListener('click', function () {
+        var v = parseFloat(amt.value);
+        if (!(v > 0)) { amt.focus(); amt.style.boxShadow = '0 0 0 2px var(--warn)'; return; }
+        var x = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5), amt: v, cur: draft.cur, cat: draft.cat, day: draft.day, payer: draft.payer, note: $('#xNote').value.trim() };
+        S.expenses.push(x);
+        save('expenses', S.expenses);
+        closeSheet(); renderWallet(); queue('expenses', 'upsert', x);
+    });
+    setTimeout(function () { amt.focus(); }, 320);
+}
+function openSettings() {
+    openSheet(
+        '<div class="when" style="margin-top:6px">Settings · 設定</div><h2>旅行設定</h2>' +
+        '<label class="field"><span>匯率：₩1 = NT$</span><input class="input" id="sRate" type="number" inputmode="decimal" step="0.0001" value="' + S.rate + '"></label>' +
+        '<label class="field"><span>同步網址（Apps Script …/exec）</span><input class="input" id="sUrl" type="url" placeholder="留空＝只存在這台裝置" value="' + esc(SYNC.url) + '"></label>' +
+        '<label class="field"><span>同步碼</span><input class="input" id="sKey" type="text" value="' + esc(SYNC.key) + '"></label>' +
+        '<p class="note">人數請到「記帳 › 成員」設定。填了同步網址，記帳、成員與匯率會和旅伴共用；航班、行李與收藏仍只存在這台裝置。</p>' +
+        '<button class="primary" id="sSave">儲存設定</button>' +
+        '<button class="ghost" id="sClear">清除全部記帳（' + S.expenses.length + ' 筆）</button>'
+    );
+    $('#sSave').addEventListener('click', function () {
+        var r = parseFloat($('#sRate').value);
+        var u = $('#sUrl').value.trim(), k = $('#sKey').value.trim() || 'jeju2027';
+        if (u !== SYNC.url || k !== SYNC.key) {
+            SYNC.url = u; SYNC.key = k; SYNC.err = ''; save('syncUrl', u); save('syncKey', k);
+            if (u) syncStart(); else syncUi();
+        }
+        if (r > 0 && r !== S.rate) { S.rate = r; save('rate', r); queue('settings', 'upsert', { id: '匯率', value: r }); }
+        closeSheet(); renderDay(); if (S.view === 'wallet') renderWallet();
+    });
+    $('#sClear').addEventListener('click', function () {
+        if (!S.expenses.length || !confirm('確定要刪除全部 ' + S.expenses.length + ' 筆記帳？' + (syncOn() ? '（旅伴那邊也會一起刪除）' : ''))) return;
+        S.expenses.forEach(function (x) { queue('expenses', 'delete', { id: x.id }); });
+        S.expenses = []; save('expenses', []);
+        closeSheet(); if (S.view === 'wallet') renderWallet();
+    });
+}
+
+// ======== 航班（可點擊修改，存在這台裝置） ========
+var FLIGHT_DEFAULT = {
+    out: { date: '2027-01-27', from: '桃園機場', to: '濟州機場', dep: '', arr: '09:00', no: '' },
+    back: { date: '2027-02-01', from: '濟州機場', to: '桃園機場', dep: '11:40', arr: '', no: '' }
+};
+function renderFlight() {
+    var f = load('flight', FLIGHT_DEFAULT);
+    function block(k, name, tag) {
+        var x = f[k] || FLIGHT_DEFAULT[k];
+        function inp(field, type, cls, ph) {
+            return '<input class="input ' + (cls || '') + '" type="' + type + '" data-fl="' + k + '.' + field + '" value="' + esc(x[field] || '') + '" placeholder="' + (ph || '') + '">';
+        }
+        return '<div class="fl"><div class="fl-h">' + icon('plane') + '<b>' + name + '</b><span class="tag ' + (k === 'out' ? 'spot' : 'food') + '">' + tag + '</span></div>' +
+            '<label>日期</label>' + inp('date', 'date') +
+            '<div class="route"><div><label>出發機場</label>' + inp('from', 'text') + '</div><span>→</span><div><label>抵達機場</label>' + inp('to', 'text') + '</div></div>' +
+            '<div class="two"><div><label>出發時間</label>' + inp('dep', 'time', 'tm') + '</div><div><label>抵達時間</label>' + inp('arr', 'time', 'tm') + '</div></div>' +
+            '<label>航空公司／航班號</label>' + inp('no', 'text', '', '例如：濟州航空 7C2602') + '</div>';
+    }
+    $('#flightPane').innerHTML = '<h2>航班資訊</h2><p class="bus-note" style="margin-top:0">去程抵達與回程起飛時間取自行程表；欄位可直接點擊修改，會自動儲存在這台裝置。</p>' +
+        block('out', '去程', '出發') + block('back', '回程', '返台') +
+        '<div class="booksplit"><h4>🛬 落地後</h4>600 機場利木津在 1 樓入境層搭乘，首班 06:00／末班 22:40、約 20 分一班，到西歸浦約 80 分。</div>' +
+        '<div class="booksplit"><h4>🛫 回程日</h4>Howard Johnson → 濟州機場 2.6 km、計程車約 4 分（₩4,900 全車）。</div>';
+}
+document.addEventListener('input', function (e) {
+    var k = e.target.getAttribute && e.target.getAttribute('data-fl');
+    if (!k) return;
+    var f = load('flight', FLIGHT_DEFAULT), p = k.split('.');
+    f[p[0]] = f[p[0]] || {};
+    f[p[0]][p[1]] = e.target.value;
+    save('flight', f);
+});
+
+// ======== 行李清單 ========
+var PACK_DEFAULT = [
+    ['證件與付款', [['護照', ''], ['電子機票／登機證', ''], ['韓元現金', ''], ['信用卡', ''], ['T-Money 卡', '桃園機場就能先領好']]],
+    ['冬攀裝備', [['簡易冰爪', 'D1 在濟州市租・雪季沒冰爪會被拒絕入山'], ['登山杖', 'D1 一起租，D4 歸還'], ['保溫瓶', 'D3 山頂泡麵用'], ['頭燈', 'D3 05:30 摸黑出發'], ['入山預約 QR 碼', '每人個別預約'], ['高熱量行動糧', 'D1 樂天超市買']]],
+    ['保暖', [['毛帽', ''], ['手套', ''], ['羽絨外套', ''], ['發熱衣褲', ''], ['暖暖包', '等公車和山上都用得到']]],
+    ['電子與 APP', [['行動電源', ''], ['轉接頭', '韓國 220V 圓孔'], ['網卡／eSIM', ''], ['Naver Map', '查公車一律用它'], ['Kakao T', '叫計程車']]]
+];
+function renderPack() {
+    var checked = load('packChecked', {}), extra = load('packExtra', []);
+    var groups = PACK_DEFAULT.map(function (g) { return [g[0], g[1].map(function (it) { return { id: g[0] + '/' + it[0], name: it[0], note: it[1] }; })]; });
+    if (extra.length) groups.push(['自己加的', extra.map(function (x) { return { id: 'x/' + x.id, name: x.name, note: '', extra: x.id }; })]);
+    var total = 0, done = 0;
+    $('#pkList').innerHTML = groups.map(function (g) {
+        return '<div class="card sec pk"><h4>' + esc(g[0]) + '</h4><ul>' + g[1].map(function (it) {
+            total++; if (checked[it.id]) done++;
+            return '<li><label><input type="checkbox" data-pk="' + esc(it.id) + '"' + (checked[it.id] ? ' checked' : '') + '><span>' + esc(it.name) + (it.note ? '<small>' + esc(it.note) + '</small>' : '') + '</span></label>' +
+                (it.extra ? '<button class="del" data-pkdel="' + it.extra + '" aria-label="刪除">' + icon('x') + '</button>' : '') + '</li>';
+        }).join('') + '</ul></div>';
+    }).join('');
+    $('#pkProg').textContent = 'Packed ' + done + ' / ' + total;
+}
+document.addEventListener('change', function (e) {
+    var k = e.target.getAttribute && e.target.getAttribute('data-pk');
+    if (!k) return;
+    var c = load('packChecked', {});
+    if (e.target.checked) c[k] = 1; else delete c[k];
+    save('packChecked', c);
+    renderPack();
+});
+function addPack() {
+    var v = $('#pkNew').value.trim(); if (!v) return;
+    var ex = load('packExtra', []); ex.push({ id: Date.now().toString(36), name: v }); save('packExtra', ex);
+    $('#pkNew').value = ''; renderPack();
+}
+
+// ======== 出團資訊 ========
+function setInfo(k) {
+    S.info = k;
+    $$('#infoSeg button').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-info') === k); });
+    $$('[data-infopane]').forEach(function (p) { p.hidden = p.getAttribute('data-infopane') !== k; });
+}
+function prepTables(root) {
+    $$('table', root).forEach(function (t) {
+        var hr = $('tr', t); if (!hr || !$('th', hr)) return;
+        var names = $$('th', hr).map(function (th) { return (th.childNodes[0] && th.childNodes[0].textContent || th.textContent).trim(); });
+        $$('tr', t).slice(1).forEach(function (tr) {
+            $$('td', tr).forEach(function (td, i) { if (names[i] && !td.hasAttribute('data-label')) td.setAttribute('data-label', names[i]); });
+        });
+    });
+}
+function prepInfo() {
+    // 表格欄名 → data-label，手機上每列排成卡片
+    $$('.info').forEach(prepTables);
+    var tabs = $$('.info .plantabs button');
+    tabs.forEach(function (b) {
+        b.addEventListener('click', function () {
+            var k = b.getAttribute('data-plan');
+            tabs.forEach(function (x) { x.classList.toggle('active', x === b); });
+            $$('.info .planpanel').forEach(function (p) { p.classList.toggle('show', p.id === 'plan-' + k); });
+        });
+    });
+}
+
+// ======== 事件 ========
+document.addEventListener('click', function (e) {
+    var t = e.target.closest('button, a');
+    if (!t) { if (e.target.id === 'scrim') closeSheet(); return; }
+    var a;
+    if (t.matches('[data-close]')) return closeSheet();
+    if ((a = t.getAttribute('data-save'))) { e.stopPropagation(); return toggleSave(a); }
+    if ((a = t.getAttribute('data-focus'))) return focusSpot(+a);
+    if ((a = t.getAttribute('data-exfocus'))) return focusEx(+a);
+    if ((a = t.getAttribute('data-leg'))) return openLeg(+a);
+    if ((a = t.getAttribute('data-busstop'))) return focusBusStop(a);
+    if ((a = t.getAttribute('data-legmap'))) return focusLeg(+a);
+    if (t.getAttribute('data-mapfilter')) { go('map'); return setTimeout(function () { if (MAP) { MAP.invalidateSize(); mapFocusKey(t.getAttribute('data-mapfilter')); } }, 80); }
+    if ((a = t.getAttribute('data-row'))) return openRow(a);
+    if ((a = t.getAttribute('data-stop'))) return openStop(a);
+    if ((a = t.getAttribute('data-goto'))) { go('plan'); return openStop(a, true); }
+    if ((a = t.getAttribute('data-mdel'))) return delMember(a);
+    if (t.id === 'mAdd') return addMember();
+    if (t.id === 'pkAdd') return addPack();
+    if ((a = t.getAttribute('data-pkdel'))) { save('packExtra', load('packExtra', []).filter(function (x) { return x.id !== a; })); return renderPack(); }
+    if (t.hasAttribute('data-export')) return exportCsv();
+    if ((a = t.getAttribute('data-day'))) return setDay(+a);
+    if ((a = t.getAttribute('data-step'))) return setDay(S.day + +a);
+    if ((a = t.getAttribute('data-mapk'))) return mapFocusKey(a);
+    if ((a = t.getAttribute('data-sf'))) { S.spotFilter = a; return renderSpots(); }
+    if ((a = t.getAttribute('data-del'))) {
+        S.expenses = S.expenses.filter(function (x) { return x.id !== a; });
+        save('expenses', S.expenses); renderWallet(); return queue('expenses', 'delete', { id: a });
+    }
+    if ((a = t.getAttribute('data-open'))) return a === 'add' ? openAdd() : openSettings();
+    if ((a = t.getAttribute('data-go'))) { closeSheet(); return go(a, t.getAttribute('data-info')); }
+    if ((a = t.getAttribute('data-info')) && t.closest('#infoSeg')) return setInfo(a);
+    if (t.tagName === 'A') {
+        var h = t.getAttribute('href') || '';
+        if (h === '#traffic101') { e.preventDefault(); setInfo('traffic'); window.scrollTo(0, 0); }
+        else if (h === '#hotelbus') { e.preventDefault(); setInfo('hotel'); window.scrollTo(0, 0); }
+    }
+});
+$('#scrim').addEventListener('click', closeSheet);
+document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter') return;
+    if (e.target.id === 'mNew') addMember();
+    if (e.target.id === 'pkNew') addPack();
+});
+document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeSheet(); });
+$('[data-range]').addEventListener('input', function (e) { setDay(+e.target.value); });
+
+// ======== 啟動 ========
+(function () {
+    var today = new Date(); today.setHours(0, 0, 0, 0);
+    var diff = Math.round((today - TRIP_START) / 864e5);
+    var end = dateOf(DAYS.length);
+    var cd = $('#countdown');
+    if (diff < 0) { cd.innerHTML = '2027.01.27 – 02.01　·　距出發 <b>' + (-diff) + '</b> 天'; S.day = load('day', 1); }
+    else if (diff < DAYS.length) { cd.innerHTML = '旅途中　·　今天是 <b>Day ' + (diff + 1) + '</b>'; S.day = diff + 1; }
+    else { cd.innerHTML = '2027.01.27 – 02.01　·　旅程已結束'; S.day = load('day', 1); }
+    if (!(S.day >= 1 && S.day <= DAYS.length)) S.day = 1;
+    prepInfo();
+    renderDay();
+    var h = (location.hash || '').slice(1);
+    go(document.getElementById('v-' + h) ? h : 'home');
+    syncStart();
+    void end;
+})();
+</script>
+</body>
+</html>
