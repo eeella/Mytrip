@@ -218,6 +218,7 @@ svg.i { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-widt
 .route-tip { position: absolute; z-index: 500; left: 10px; right: 10px; bottom: 10px; padding: 11px 14px; border-radius: 16px; background: rgba(251, 253, 255, .97); box-shadow: var(--shadow); font-size: 13.5px; color: var(--ink-2); display: flex; align-items: center; gap: 8px; }
 .route-tip { flex-direction: column; align-items: stretch; gap: 8px; }
 .route-tip .rt-row { display: flex; gap: 8px; }
+.route-tip .rt-row #rtLocate { flex: none; padding: 9px 12px; border-radius: 999px; background: var(--ink); color: #FBFDFF; font-size: 13px; font-weight: 600; white-space: nowrap; }
 .route-tip .rt-row input { flex: 1; min-width: 0; box-sizing: border-box; padding: 9px 12px; border-radius: 999px; border: 0; background: var(--card-2); font: inherit; font-size: 14px; color: var(--ink); }
 .route-tip .rt-row input:focus { outline: 2px solid var(--gold); }
 .route-tip .rt-msg { display: flex; align-items: center; gap: 8px; }
@@ -667,8 +668,9 @@ svg.i { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-widt
             <div id="map"></div>
             <div class="route-tip" id="routeTip">
                 <div class="rt-row">
-                    <input id="rtFrom" type="search" placeholder="起點（輸入地名，或點地圖上的點）" autocomplete="off" aria-label="路線起點">
-                    <input id="rtTo" type="search" placeholder="終點" autocomplete="off" aria-label="路線終點">
+                    <button id="rtLocate" type="button" aria-label="用現在位置當起點">📍 現在位置</button>
+                    <input id="rtFrom" type="search" placeholder="輸入起點" autocomplete="off" aria-label="路線起點">
+                    <input id="rtTo" type="search" placeholder="輸入終點" autocomplete="off" aria-label="路線終點">
                 </div>
                 <div class="rt-msg"><span id="routeMsg">點任兩個地點，或直接輸入起點、終點，就會畫出路線並估算車程</span><button id="routeClear" hidden>清除</button></div>
                 <ul id="rtList"></ul>
@@ -2102,13 +2104,14 @@ function mapSearchItems() {
 }
 // 路線的起點／終點也能用打字輸入（先找行程裡的點，也可查網路上的任意地名）
 function initRouteInputs() {
-    var inputs = [$('#rtFrom'), $('#rtTo')], list = $('#rtList'), cur = 0, shown = [];
+    var inputs = [$('#rtFrom'), $('#rtTo')], list = $('#rtList'), cur = 0, shown = [], quiet = false;
     function paint(items) {
         shown = items;
         list.innerHTML = items.map(function (it, i) { return '<li data-i="' + i + '"' + (it.web ? ' class="web"' : '') + '>' + esc(it.name) + (it.tag ? '<small>' + esc(it.tag) + '</small>' : '') + '</li>'; }).join('');
         list.className = 'show';
     }
     function suggest(k) {
+        if (quiet) return;
         cur = k; var q = inputs[k].value.trim(), ql = q.toLowerCase();
         if (picked[k] && picked[k]._label === q) { list.className = ''; shown = []; return; }
         var items = [{ loc: true, name: '📍 現在位置', tag: '用手機定位' }];
@@ -2121,7 +2124,7 @@ function initRouteInputs() {
     function choose(k, pt) {
         list.className = ''; shown = [];
         var pseudo = { _label: pt.label, getLatLng: function () { return L.latLng(pt.lat, pt.lng); } };
-        if (k === 0) { clearRoute(); onPick(pseudo); routeMsg('起點：<b>' + esc(pt.label) + '</b>，再輸入或點選終點'); inputs[1].focus(); return; }
+        if (k === 0) { clearRoute(); onPick(pseudo); routeMsg('起點：<b>' + esc(pt.label) + '</b>，再輸入或點選終點'); quiet = true; inputs[1].focus(); quiet = false; return; }
         if (!picked.length) { routeMsg('請先選起點'); inputs[0].focus(); return; }
         if (picked.length >= 2) { if (routeLine) { MAP.removeLayer(routeLine); routeLine = null; } markSel(picked[1], false); picked.pop(); }
         onPick(pseudo);
@@ -2156,6 +2159,7 @@ function initRouteInputs() {
         if (it.m) { var ll = it.m.getLatLng(); choose(cur, { lat: ll.lat, lng: ll.lng, label: it.m._label || it.name.split('（')[0] }); }
         else choose(cur, { lat: it.lat, lng: it.lng, label: it.name.split(',')[0] });
     }
+    $('#rtLocate').addEventListener('click', function () { cur = 0; locate(0); });
     inputs.forEach(function (inp, k) {
         inp.addEventListener('input', function () { suggest(k); });
         inp.addEventListener('focus', function () { suggest(k); });
